@@ -36,7 +36,7 @@ exports.checkJSHint = function () {
 
 /** Rhino wrapper must pass JSHint check */
 exports.checkRhino = function () {
-    var src = fs.readFileSync(__dirname + "/../env/rhino.js", "utf8");
+    var src = fs.readFileSync(__dirname + "/../src/env/rhino.js", "utf8");
     TestRun("jshint-rhino").test(src, {
             bitwise: true,
             eqeqeq: true,
@@ -58,7 +58,7 @@ exports.checkRhino = function () {
 
 /* JavaScriptCore wrapper must pass JSHint check */
 exports.checkJSC = function () {
-    var src = fs.readFileSync(__dirname + "/../env/jsc.js", "utf8");
+    var src = fs.readFileSync(__dirname + "/../src/env/jsc.js", "utf8");
     TestRun().test(src);
 };
 
