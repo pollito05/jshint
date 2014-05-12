@@ -1,5 +1,5 @@
-/*jshint boss: true, rhino: true, unused: true, undef: true, white: true, quotmark: double */
-/*global jshint, readFully */
+/*jsmike boss: true, rhino: true, unused: true, undef: true, white: true, quotmark: double */
+/*global jsmike, readFully */
 
 (function (args) {
   "use strict";
@@ -46,7 +46,7 @@
   });
 
   if (filenames.length === 0) {
-    print("Usage: jshint.js file.js");
+    print("Usage: jsmike.js file.js");
     quit(1);
   }
 
@@ -97,11 +97,11 @@
     var input = readf(name);
 
     if (!input) {
-      print("jshint: Couldn't open file " + name);
+      print("jsmike: Couldn't open file " + name);
       quit(1);
     }
 
-    var report = jshint.run(input, opts, globals);
+    var report = jsmike.run(input, opts, globals);
     if (!report.success) {
       for (var i = 0, err; err = report.data.errors[i]; i += 1) {
         print(err.reason + " (" + name + ":" + err.line + ":" + err.character + ")");

@@ -2,7 +2,7 @@
  * Regular expressions. Some of these are stupidly long.
  */
 
-/*jshint maxlen:1000 */
+/*jsmike maxlen:1000 */
 
 "use string";
 

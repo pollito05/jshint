@@ -15,7 +15,7 @@ var nonAsciiIdentifierStartTable = require("../data/non-ascii-identifier-start.j
 var nonAsciiIdentifierPartTable = require("../data/non-ascii-identifier-part-only.js");
 
 // Some of these token types are from JavaScript Parser API
-// while others are specific to JSHint parser.
+// while others are specific to JSMike parser.
 // JS Parser API: https://developer.mozilla.org/en-US/docs/SpiderMonkey/Parser_API
 
 var Token = {
@@ -32,7 +32,7 @@ var Token = {
 };
 
 /*
- * Lexer for JSHint.
+ * Lexer for JSMike.
  *
  * This object does a char-by-char scan of the provided source code
  * and produces a sequence of tokens.
@@ -303,8 +303,8 @@ Lexer.prototype = {
    * pointer.
    *
    * In addition to normal JavaScript comments (// and /*) this method
-   * also recognizes JSHint- and JSLint-specific comments such as
-   * /*jshint, /*jslint, /*globals and so on.
+   * also recognizes JSMike- and JSLint-specific comments such as
+   * /*jsmike, /*jslint, /*globals and so on.
    */
   scanComments: function () {
     var ch1 = this.peek();
@@ -314,11 +314,11 @@ Lexer.prototype = {
     var startChar = this.char;
 
     // Create a comment token object and make sure it
-    // has all the data JSHint needs to work with special
+    // has all the data JSMike needs to work with special
     // comments.
 
     function commentToken(label, body, opt) {
-      var special = ["jshint", "jslint", "members", "member", "globals", "global", "exported"];
+      var special = ["jsmike", "jslint", "members", "member", "globals", "global", "exported"];
       var isSpecial = false;
       var value = label + body;
       var commentType = "plain";
@@ -333,9 +333,9 @@ Lexer.prototype = {
           return;
         }
 
-        // Don't recognize any special comments other than jshint for single-line
+        // Don't recognize any special comments other than jsmike for single-line
         // comments. This introduced many problems with legit comments.
-        if (label === "//" && str !== "jshint") {
+        if (label === "//" && str !== "jsmike") {
           return;
         }
 
@@ -487,7 +487,7 @@ Lexer.prototype = {
     }
 
     var readUnicodeEscapeSequence = function () {
-      /*jshint validthis:true */
+      /*jsmike validthis:true */
       index += 1;
 
       if (this.peek(index) !== "u") {
@@ -515,7 +515,7 @@ Lexer.prototype = {
     }.bind(this);
 
     var getIdentifierStart = function () {
-      /*jshint validthis:true */
+      /*jsmike validthis:true */
       var chr = this.peek(index);
       var code = chr.charCodeAt(0);
 
@@ -541,7 +541,7 @@ Lexer.prototype = {
     }.bind(this);
 
     var getIdentifierPart = function () {
-      /*jshint validthis:true */
+      /*jsmike validthis:true */
       var chr = this.peek(index);
       var code = chr.charCodeAt(0);
 
@@ -866,7 +866,7 @@ Lexer.prototype = {
    *   world";
    */
   scanStringLiteral: function () {
-    /*jshint loopfunc:true */
+    /*jsmike loopfunc:true */
     var quote = this.peek();
 
     // String must start with a quote.
@@ -1320,7 +1320,7 @@ Lexer.prototype = {
    * the next token. It retuns a token in a JSLint-compatible format.
    */
   token: function () {
-    /*jshint loopfunc:true */
+    /*jsmike loopfunc:true */
     var token;
 
     for (;;) {

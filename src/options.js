@@ -1,6 +1,6 @@
 "use strict";
 
-// These are the JSHint boolean options.
+// These are the JSMike boolean options.
 exports.simple = {
   asi         : true, // if automatic semicolon insertion should be tolerated
   bitwise     : true, // if bitwise operators should not be allowed
@@ -71,7 +71,7 @@ exports.simple = {
                       // should be tolerated
 };
 
-// These are the JSHint options that can take any value
+// These are the JSMike options that can take any value
 // (we use this object to detect invalid options)
 exports.multi = {
   indent       : false,
@@ -104,8 +104,8 @@ exports.multi = {
                         // true     - allow variable shadowing
 };
 
-// These are JSHint boolean options which are shared with JSLint
-// where the definition in JSHint is opposite JSLint
+// These are JSMike boolean options which are shared with JSLint
+// where the definition in JSMike is opposite JSLint
 exports.inverted = {
   bitwise : true,
   forin   : true,
@@ -115,13 +115,13 @@ exports.inverted = {
   regexp  : true,
   undef   : true,
 
-  // Inverted and renamed, use JSHint name here
+  // Inverted and renamed, use JSMike name here
   eqeqeq  : true,
   onevar  : true,
   strict  : true
 };
 
-// These are JSHint boolean options which are shared with JSLint
+// These are JSMike boolean options which are shared with JSLint
 // where the name has been changed but the effect is unchanged
 exports.renamed = {
   eqeq   : "eqeqeq",

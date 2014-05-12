@@ -1,4 +1,4 @@
-// jshint -W001
+// jsmike -W001
 
 "use strict";
 

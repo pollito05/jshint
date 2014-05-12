@@ -27,11 +27,11 @@ function get(code, args) {
 }
 
 var errors = make("error", {
-  // JSHint options
+  // JSMike options
   E001: "Bad option: '{a}'.",
   E002: "Bad option value.",
 
-  // JSHint input
+  // JSMike input
   E003: null,
   E004: null,
   E005: null,
@@ -219,7 +219,7 @@ var warnings = make("warning", {
   W122: "Invalid typeof value '{a}'",
   W123: "'{a}' is already defined in outer scope.",
   W124: "A generator function shall contain a yield statement.",
-  W125: "This line contains non-breaking spaces: http://jshint.com/docs/options/#nonbsp"
+  W125: "This line contains non-breaking spaces: http://jsmike.com/docs/options/#nonbsp"
 });
 
 exports.get = get;

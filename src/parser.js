@@ -1,4 +1,4 @@
-/*jshint quotmark:double */
+/*jsmike quotmark:double */
 /*global console:true */
 /*exported console */
 
@@ -313,7 +313,7 @@ function doOption() {
     "indent"
   ];
 
-  if (nt.type === "jshint" || nt.type === "jslint") {
+  if (nt.type === "jsmike" || nt.type === "jslint") {
     body.forEach(function (g) {
       g = g.split(":");
       var key = (g[0] || "").trim();
@@ -682,7 +682,7 @@ function expression(rbp, initial) {
       isObject = state.tokens.curr.value === "Object";
 
       // #527, new Foo.Array(), Foo.Array(), new Foo.Object(), Foo.Object()
-      // Line breaks in IfStatement heads exist to satisfy the checkJSHint
+      // Line breaks in IfStatement heads exist to satisfy the checkJSMike
       // "Line too long." error.
       if (left && (left.value || (left.first && left.first.value))) {
         // If the left.value is not "new", or the left.first.value is a "."
@@ -2090,7 +2090,7 @@ infix("(", function (left, that) {
 }, 155, true).exps = true;
 
 prefix("(", function () {
-  /*jshint loopfunc:true */
+  /*jsmike loopfunc:true */
   var bracket, brackets = [];
   var pn, pn1, i = 0;
   var ret;
@@ -2293,7 +2293,7 @@ function property_name() {
 }
 
 function functionparams(parsed) {
-  /*jshint loopfunc:true */
+  /*jsmike loopfunc:true */
   var next;
   var params = [];
   var ident;
@@ -2752,7 +2752,7 @@ function destructuringExpressionMatch(tokens, value) {
 }
 
 var conststatement = stmt("const", function (prefix) {
-  /*jshint loopfunc:true */
+  /*jsmike loopfunc:true */
   var tokens;
   var value;
   var lone; // State variable to know if it is a lone identifier, or a destructuring statement.
@@ -2821,7 +2821,7 @@ var conststatement = stmt("const", function (prefix) {
 conststatement.exps = true;
 
 var varstatement = stmt("var", function (prefix) {
-  /*jshint loopfunc:true */
+  /*jsmike loopfunc:true */
   var tokens, lone, value;
 
   this.first = [];
@@ -2880,7 +2880,7 @@ var varstatement = stmt("var", function (prefix) {
 varstatement.exps = true;
 
 var letstatement = stmt("let", function (prefix) {
-  /*jshint loopfunc:true */
+  /*jsmike loopfunc:true */
   var tokens, lone, value, letblock;
 
   if (!api.getEnvironment("es6")) {
@@ -2965,7 +2965,7 @@ blockstmt("class", function () {
 });
 
 function classdef(stmt) {
-  /*jshint validthis:true */
+  /*jsmike validthis:true */
   if (!api.getEnvironment("es6")) {
     warn("W104", { token: state.tokens.curr, args: ["class"] });
   }
@@ -3205,7 +3205,7 @@ blockstmt("switch", function () {
       case "throw":
         break;
       default:
-        // You can tell JSHint that you don't use break intentionally by
+        // You can tell JSMike that you don't use break intentionally by
         // adding a comment /* falls through */ on a line just before
         // the next `case`.
         if (!reg.fallsThrough.test(lex.source[state.tokens.next.line - 2])) {
