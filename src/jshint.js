@@ -1392,7 +1392,7 @@ var JSHINT = (function () {
       "Iterator", "Number", "NumberFormat", "Object", "RangeError",
       "ReferenceError", "RegExp", "StopIteration", "String", "SyntaxError",
       "TypeError", "Uint16Array", "Uint32Array", "Uint8Array", "Uint8ClampedArray",
-      "URIError"
+      "URIError", "undefined"
     ];
 
     function walkPrototype(obj) {
@@ -2207,7 +2207,7 @@ var JSHINT = (function () {
     }
   });
   reservevar("true");
-  reservevar("undefined");
+  //reservevar("undefined");
 
   assignop("=", "assign", 20);
   assignop("+=", "assignadd", 20);
@@ -3434,7 +3434,7 @@ var JSHINT = (function () {
 
       if (state.tokens.next.id === "=") {
         advance("=");
-        if (state.tokens.next.id === "undefined") {
+        if (state.tokens.next.value === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
         }
         if (peek(0).id === "=" && state.tokens.next.identifier) {
@@ -3495,7 +3495,11 @@ var JSHINT = (function () {
 
       if (state.tokens.next.id === "=") {
         advance("=");
-        if (state.tokens.next.id === "undefined") {
+        // MIKE
+        if (state.tokens.prev.value === "undefined" && state.option.freeze) {
+          warning("W020", state.tokens.prev);
+        }
+        if (state.tokens.next.value === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
         }
         if (peek(0).id === "=" && state.tokens.next.identifier) {
@@ -3571,7 +3575,7 @@ var JSHINT = (function () {
 
       if (state.tokens.next.id === "=") {
         advance("=");
-        if (state.tokens.next.id === "undefined") {
+        if (state.tokens.next.value === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
         }
         if (peek(0).id === "=" && state.tokens.next.identifier) {
