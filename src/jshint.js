@@ -53,8 +53,7 @@ var console = require("console-browserify");
 var JSHINT = (function () {
   "use strict";
 
-  var anonname, // The guessed name for anonymous functions.
-    api, // Extension API
+  var api, // Extension API
 
     // These are operators that should not be used with the ! operator.
     bang = {
@@ -932,8 +931,8 @@ var JSHINT = (function () {
       break;
     }
 
-    if (state.tokens.curr.type === "(string)" || state.tokens.curr.identifier) {
-      anonname = state.tokens.curr.value;
+    if (state.tokens.curr.identifier) {
+      state.prevIdentifier = state.tokens.curr;
     }
 
     if (id && state.tokens.next.id !== id) {
@@ -1016,6 +1015,8 @@ var JSHINT = (function () {
     var left, isArray = false, isObject = false, isLetExpr = false,
       isFatArrowBody = state.tokens.curr.value === "=>";
 
+    state.nameStack.push();
+
     // if current expression is a let expression
     if (!initial && state.tokens.next.value === "let" && peek(0).value === "(") {
       if (!state.option.inMoz(true)) {
@@ -1049,7 +1050,6 @@ var JSHINT = (function () {
     advance();
 
     if (initial) {
-      anonname = "anonymous";
       funct["(verb)"] = state.tokens.curr.value;
     }
 
@@ -1109,6 +1109,8 @@ var JSHINT = (function () {
       !isFatArrowBody && !left.triggerFnExpr) {
       warning("W126");
     }
+
+    state.nameStack.pop();
 
     return left;
   }
@@ -1462,6 +1464,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
+          state.nameStack.set(state.tokens.prev);
           that.right = expression(10);
           return that;
         } else if (left.id === "[") {
@@ -1476,12 +1479,16 @@ var JSHINT = (function () {
           } else if (left.left.value === "arguments" && !state.directive["use strict"]) {
             warning("E031", that);
           }
+
+          state.nameStack.set(left.right);
+
           that.right = expression(10);
           return that;
         } else if (left.identifier && !isReserved(left)) {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
+          state.nameStack.set(left);
           that.right = expression(10);
           return that;
         }
@@ -2031,6 +2038,7 @@ var JSHINT = (function () {
       var s = scope[v];
       var f;
       var block;
+      var prevIdentifier;
 
       if (typeof s === "function") {
         // Protection against accidental inheritance.
@@ -2101,7 +2109,8 @@ var JSHINT = (function () {
             // display warning if we're inside of typeof or delete.
             // Attempting to subscript a null reference will throw an
             // error, even within the typeof and delete operators
-            if (!(anonname === "typeof" || anonname === "delete") ||
+            prevIdentifier = state.prevIdentifier && state.prevIdentifier.value;
+            if (!(prevIdentifier === "typeof" || prevIdentifier === "delete") ||
               (state.tokens.next &&
                 (state.tokens.next.value === "." || state.tokens.next.value === "["))) {
 
@@ -3001,7 +3010,9 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || "\"" + anonname + "\"", state.tokens.next, scope, {
+    // Ignore the most recent name on the stack--it was created in response to
+    // this function expression.
+    funct = functor(name || state.nameStack.infer(-1), state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -3166,7 +3177,7 @@ var JSHINT = (function () {
           // We don't want to save this getter unless it's an actual getter
           // and not an ES6 concise method
           if (i) {
-            saveAccessor(nextVal, props, i, state.tokens.next);
+            saveAccessor(nextVal, props, i, state.tokens.curr);
           }
 
           t = state.tokens.next;
@@ -3200,7 +3211,9 @@ var JSHINT = (function () {
           } else {
             if (state.tokens.next.id === "[") {
               i = computedPropertyName();
+              state.nameStack.set(i);
             } else {
+              state.nameStack.set(state.tokens.next);
               i = propertyName();
               saveProperty(props, i, state.tokens.next);
 
@@ -3434,6 +3447,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
+        state.nameStack.set(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
@@ -3557,6 +3571,10 @@ var JSHINT = (function () {
     } else if (state.tokens.next.identifier && state.tokens.next.value !== "extends") {
       // BindingIdentifier(opt)
       this.name = identifier();
+    } else {
+      // Ignore the most recent name on the stack--it was created in response
+      // to this class definition.
+      this.name = state.nameStack.infer(-1);
     }
     classtail(this);
     return this;
@@ -3643,6 +3661,12 @@ var JSHINT = (function () {
             getset.value, isStatic ? staticProps : props, name.value, name, true, isStatic
           );
         } else {
+          if (name.value === "constructor") {
+            state.nameStack.set(c);
+          } else {
+            state.nameStack.set(name);
+            state.nameStack.push();
+          }
           saveProperty(isStatic ? staticProps : props, name.value, name, true, isStatic);
         }
       }
@@ -3654,7 +3678,9 @@ var JSHINT = (function () {
         error("E049", name, "class method", "prototype");
       }
 
-      doFunction(!computed && propertyName(name), c, false, null);
+      propertyName(name);
+
+      doFunction(null, c, false, null);
     }
   }
 
@@ -4548,6 +4574,15 @@ var JSHINT = (function () {
     } else {
       msg = "key";
     }
+
+    state.tokens.curr.accessorType = accessorType;
+    state.nameStack.set(tkn);
+    // Because `doFunction` is most commonly called as part of a Function
+    // expression, it has been written to ignore the topmost entry on the
+    // name stack. This form of function declaration does not require an
+    // additional expression, so a "dummy" name must be pushed to the
+    // stack.
+    state.nameStack.push();
 
     if (props[name] && _.has(props, name)) {
       if (props[name].basic || props[name][flagName]) {
