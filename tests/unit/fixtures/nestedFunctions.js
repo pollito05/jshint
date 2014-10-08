@@ -31,5 +31,37 @@ function g() { return function h     () { return 1+1; };}
 
 // function in object
 var i = {
-	j : function () { return 1+1; }
+	j : function () { return 1+1; },
+	"k" : function() {},
+	23: function() {},
+	["computedStr"] : function() {},
+	["computed" + 3] : function() {},
+	get getter() {},
+	set setter() {}
 };
+
+g.then(function() {});
+
+var unrelated;
+
+// Inferred name values should not extend beyond assignment operations.
+unrelated = {}, (function() {})();
+
+unrelated.unrelated = {}, (function() {})();
+
+g[(function() { var l = function() {}; return l(); }())] = function() {};
+
+g.viaDot = function() {};
+
+g["viaBracket"] = function() {};
+g["expr" + g + "ession"] = function() {};
+
+var VarDeclClass = class {
+  constructor() {}                 // "VarDeclClass"
+  static func() {}                 // "func"
+  method() {}                      // "method"
+  get getter() {}                  // "get getter"
+  set setter() {}                  // "set setter"
+};
+
+var grouping = (function() {});
