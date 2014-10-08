@@ -2015,9 +2015,10 @@ var JSHINT = (function () {
       var f;
       var block;
 
+		console.log('unset', scope.__proto__);
       if (typeof s === "function") {
         // Protection against accidental inheritance.
-        s = undefined;
+        //s = undefined;
       } else if (!funct["(blockscope)"].current.has(v) && typeof s === "boolean") {
         f = funct;
         funct = functions[0];

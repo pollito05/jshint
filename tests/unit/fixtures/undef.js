@@ -22,3 +22,8 @@ var fn = function () {
         delete localUndef.attr;
     }
 };
+
+// Ensure the lookup mechanism for identifiers does not inherit from the Object
+// prototype. Only identifiers declared in the source should produce a hit, and
+// the following line should produce an error:
+toString();

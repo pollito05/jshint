@@ -530,6 +530,7 @@ exports.undef = function (test) {
     .addError(19, "'localUndef' is not defined.")
     .addError(21, "'localUndef' is not defined.")
     .addError(22, "'localUndef' is not defined.")
+    .addError(29, "'toString' is not defined.")
     .test(src, { es3: true, undef: true });
 
   // Regression test for GH-668.
