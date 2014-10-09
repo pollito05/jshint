@@ -919,7 +919,7 @@ var JSHINT = (function () {
     }
 
     if (state.tokens.curr.identifier) {
-      prevIdentifier = state.tokens.curr.value;
+      prevIdentifier = state.tokens.curr;
     }
 
     if (id && state.tokens.next.id !== id) {
@@ -2062,7 +2062,7 @@ var JSHINT = (function () {
         if (typeof predefined[v] !== "boolean") {
           // Attempting to subscript a null reference will throw an
           // error, even within the typeof and delete operators
-          if (!(prevIdentifier === "typeof" || prevIdentifier === "delete") ||
+          if (!prevIdentifier.acceptsUnresovable ||
             (state.tokens.next && (state.tokens.next.value === "." ||
               state.tokens.next.value === "["))) {
 
@@ -2110,7 +2110,7 @@ var JSHINT = (function () {
             // display warning if we're inside of typeof or delete.
             // Attempting to subscript a null reference will throw an
             // error, even within the typeof and delete operators
-            if (!(prevIdentifier === "typeof" || prevIdentifier === "delete") ||
+            if (!prevIdentifier.acceptsUnresovable ||
               (state.tokens.next &&
                 (state.tokens.next.value === "." || state.tokens.next.value === "["))) {
 
@@ -2381,6 +2381,7 @@ var JSHINT = (function () {
   prefix("--", "predec");
   state.syntax["--"].exps = true;
   prefix("delete", function () {
+    this.acceptsUnresolvable = true;
     var p = expression(10);
     if (!p || (p.id !== "." && p.id !== "[")) {
       warning("W051");
@@ -2422,7 +2423,12 @@ var JSHINT = (function () {
     return this;
   });
 
-  prefix("typeof", "typeof");
+  prefix("typeof", function() {
+    this.acceptsUnresovable = true;
+    this.right = expression(150);
+    this.arity = "unary";
+    return this;
+  });
   prefix("new", function () {
     var c = expression(155), i;
     if (c && c.id !== "function") {
