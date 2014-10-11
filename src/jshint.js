@@ -41,6 +41,7 @@ var reg      = require("./reg.js");
 var State    = require("./state.js");
 var state    = new State();
 var style    = require("./style.js");
+var Functor  = require("./functor.js");
 
 // We need this module here because environments such as IE and Rhino
 // don't necessarilly expose the 'console' API and browserify uses
@@ -1866,7 +1867,7 @@ var JSHINT = (function () {
 
     var metrics = funct["(metrics)"];
     metrics.nestedBlockDepth += 1;
-    metrics.verifyMaxNestedBlockDepthPerFunction();
+    metrics.verifyMaxNestedBlockDepthPerFunction(state, warning);
 
     if (state.tokens.next.id === "{") {
       advance("{");
@@ -2904,47 +2905,6 @@ var JSHINT = (function () {
     return funct["(properties)"][name][prop] || null;
   }
 
-  function functor(name, token, scope, overwrites) {
-    var funct = {
-      "(name)"      : name,
-      "(breakage)"  : 0,
-      "(loopage)"   : 0,
-      "(scope)"     : scope,
-      "(tokens)"    : {},
-      "(properties)": {},
-
-      "(catch)"     : false,
-      "(global)"    : false,
-
-      "(line)"      : null,
-      "(character)" : null,
-      "(metrics)"   : null,
-      "(statement)" : null,
-      "(context)"   : null,
-      "(blockscope)": null,
-      "(comparray)" : null,
-      "(generator)" : null,
-      "(params)"    : null
-    };
-
-    if (token) {
-      _.extend(funct, {
-        "(line)"     : token.line,
-        "(character)": token.character,
-        "(metrics)"  : createMetrics(token)
-      });
-    }
-
-    _.extend(funct, overwrites);
-
-    if (funct["(context)"]) {
-      funct["(blockscope)"] = funct["(context)"]["(blockscope)"];
-      funct["(comparray)"]  = funct["(context)"]["(comparray)"];
-    }
-
-    return funct;
-  }
-
   function doTemplateLiteral() {
     while (state.tokens.next.type !== "(template tail)" && state.tokens.next.id !== "(end)") {
       advance();
@@ -2971,7 +2931,7 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || "\"" + anonname + "\"", state.tokens.next, scope, {
+    funct = new Functor(name || "\"" + anonname + "\"", state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -2987,7 +2947,7 @@ var JSHINT = (function () {
     }
 
     funct["(params)"] = functionparams(fatarrowparams);
-    funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"]);
+    funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"], state, warning);
 
     // So we parse fat-arrow functions after we encounter =>. So basically
     // doFunction is called with the left side of => as its last argument.
@@ -3004,8 +2964,8 @@ var JSHINT = (function () {
       warning("W124", state.tokens.curr);
     }
 
-    funct["(metrics)"].verifyMaxStatementsPerFunction();
-    funct["(metrics)"].verifyMaxComplexityPerFunction();
+    funct["(metrics)"].verifyMaxStatementsPerFunction(state, warning);
+    funct["(metrics)"].verifyMaxComplexityPerFunction(state, warning);
     funct["(unusedOption)"] = state.option.unused;
 
     scope = oldScope;
@@ -3022,45 +2982,6 @@ var JSHINT = (function () {
     funct = funct["(context)"];
 
     return f;
-  }
-
-  function createMetrics(functionStartToken) {
-    return {
-      statementCount: 0,
-      nestedBlockDepth: -1,
-      ComplexityCount: 1,
-
-      verifyMaxStatementsPerFunction: function () {
-        if (state.option.maxstatements &&
-          this.statementCount > state.option.maxstatements) {
-          warning("W071", functionStartToken, this.statementCount);
-        }
-      },
-
-      verifyMaxParametersPerFunction: function (params) {
-        params = params || [];
-
-        if (state.option.maxparams && params.length > state.option.maxparams) {
-          warning("W072", functionStartToken, params.length);
-        }
-      },
-
-      verifyMaxNestedBlockDepthPerFunction: function () {
-        if (state.option.maxdepth &&
-          this.nestedBlockDepth > 0 &&
-          this.nestedBlockDepth === state.option.maxdepth + 1) {
-          warning("W073", null, this.nestedBlockDepth);
-        }
-      },
-
-      verifyMaxComplexityPerFunction: function () {
-        var max = state.option.maxcomplexity;
-        var cc = this.ComplexityCount;
-        if (max && cc > max) {
-          warning("W074", functionStartToken, cc);
-        }
-      }
-    };
   }
 
   function increaseComplexityCount() {
@@ -3768,7 +3689,7 @@ var JSHINT = (function () {
 
       advance();
 
-      funct = functor("(catch)", state.tokens.next, scope, {
+      funct = new Functor("(catch)", state.tokens.next, scope, {
         "(context)"  : funct,
         "(breakage)" : funct["(breakage)"],
         "(loopage)"  : funct["(loopage)"],
@@ -4859,11 +4780,12 @@ var JSHINT = (function () {
     global = Object.create(predefined);
     scope = global;
 
-    funct = functor("(global)", null, scope, {
+    funct = new Functor("(global)", {}, scope, {
       "(global)"    : true,
       "(blockscope)": blockScope(),
       "(comparray)" : arrayComprehension(),
-      "(metrics)"   : createMetrics(state.tokens.next)
+      "(line)"      : null,
+      "(character)" : null
     });
 
     functions = [funct];
