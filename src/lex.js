@@ -7,7 +7,6 @@
 var _      = require("underscore");
 var events = require("events");
 var reg    = require("./reg.js");
-var state  = require("./state.js").state;
 
 var unicodeData = require("../data/ascii-identifier-data.js");
 var asciiIdentifierStartTable = unicodeData.asciiIdentifierStartTable;
@@ -81,7 +80,7 @@ function asyncTrigger() {
  * Mozilla's JavaScript Parser API. Eventually, we will move away from
  * JSLint format.
  */
-function Lexer(source) {
+function Lexer(source, state) {
   var lines = source;
 
   if (typeof lines === "string") {
@@ -101,6 +100,7 @@ function Lexer(source) {
     lines[0] = "";
   }
 
+  this.state = state;
   this.emitter = new events.EventEmitter();
   this.source = source;
   this.setLines(lines);
@@ -124,13 +124,13 @@ Lexer.prototype = {
   _lines: [],
 
   getLines: function () {
-    this._lines = state.lines;
+    this._lines = this.state.lines;
     return this._lines;
   },
 
   setLines: function (val) {
     this._lines = val;
-    state.lines = this._lines;
+    this.state.lines = this._lines;
   },
 
   /*
@@ -871,7 +871,7 @@ Lexer.prototype = {
 
     // String must start with a backtick.
     if (!this.inTemplate) {
-      if (!state.option.esnext || this.peek() !== "`") {
+      if (!this.state.option.esnext || this.peek() !== "`") {
         return null;
       }
       this.templateLine = this.line;
@@ -953,6 +953,7 @@ Lexer.prototype = {
   scanStringLiteral: function (checks) {
     /*jshint loopfunc:true */
     var quote = this.peek();
+    var state = this.state;
 
     // String must start with a quote.
     if (quote !== "\"" && quote !== "'") {
@@ -1055,7 +1056,7 @@ Lexer.prototype = {
             line: this.line,
             character: this.char,
             data: [ "\\'" ]
-          }, checks, function () {return state.jsonMode; });
+          }, checks, function () { return state.jsonMode; });
           break;
         case "b":
           char = "\\b";
@@ -1326,7 +1327,7 @@ Lexer.prototype = {
    * pages with non-breaking pages produce syntax errors.
    */
   scanNonBreakingSpaces: function () {
-    return state.option.nonbsp ?
+    return this.state.option.nonbsp ?
       this.input.search(/(\u00A0)/) : -1;
   },
 
@@ -1417,7 +1418,7 @@ Lexer.prototype = {
 
     // If we are ignoring linter errors, replace the input with empty string
     // if it doesn't already at least start or end a multi-line comment
-    if (state.ignoreLinterErrors === true) {
+    if (this.state.ignoreLinterErrors === true) {
       if (!startsWith("/*", "//") && !endsWith("*/")) {
         this.input = "";
       }
@@ -1428,7 +1429,7 @@ Lexer.prototype = {
       this.trigger("warning", { code: "W125", line: this.line, character: char + 1 });
     }
 
-    this.input = this.input.replace(/\t/g, state.tab);
+    this.input = this.input.replace(/\t/g, this.state.tab);
     char = this.scanUnsafeChars();
 
     if (char >= 0) {
@@ -1438,7 +1439,7 @@ Lexer.prototype = {
     // If there is a limit on line length, warn when lines get too
     // long.
 
-    if (state.option.maxlen && state.option.maxlen < this.input.length) {
+    if (this.state.option.maxlen && this.state.option.maxlen < this.input.length) {
       var inComment = this.inComment ||
         startsWith.call(inputTrimmed, "//") ||
         startsWith.call(inputTrimmed, "/*");
@@ -1468,6 +1469,7 @@ Lexer.prototype = {
   token: function () {
     /*jshint loopfunc:true */
     var checks = asyncTrigger();
+    var state = this.state;
     var token;
 
 
@@ -1523,7 +1525,7 @@ Lexer.prototype = {
           this.prereg = true;
         }
 
-        obj = Object.create(state.syntax[value] || state.syntax["(error)"]);
+        obj = Object.create(this.state.syntax[value] || this.state.syntax["(error)"]);
       }
 
       if (type === "(identifier)") {
@@ -1531,8 +1533,8 @@ Lexer.prototype = {
           this.prereg = true;
         }
 
-        if (_.has(state.syntax, value)) {
-          obj = Object.create(state.syntax[value] || state.syntax["(error)"]);
+        if (_.has(this.state.syntax, value)) {
+          obj = Object.create(this.state.syntax[value] || this.state.syntax["(error)"]);
 
           // If this can't be a reserved keyword, reset the object.
           if (!isReserved(obj, isProperty && type === "(identifier)")) {
@@ -1542,7 +1544,7 @@ Lexer.prototype = {
       }
 
       if (!obj) {
-        obj = Object.create(state.syntax[type]);
+        obj = Object.create(this.state.syntax[type]);
       }
 
       obj.identifier = (type === "(identifier)");
@@ -1631,14 +1633,14 @@ Lexer.prototype = {
           from: this.form,
           name: token.value,
           raw_name: token.text,
-          isProperty: state.tokens.curr.id === "."
+          isProperty: this.state.tokens.curr.id === "."
         });
 
         /* falls through */
       case Token.Keyword:
       case Token.NullLiteral:
       case Token.BooleanLiteral:
-        return create("(identifier)", token.value, state.tokens.curr.id === ".", token);
+        return create("(identifier)", token.value, this.state.tokens.curr.id === ".", token);
 
       case Token.NumericLiteral:
         if (token.isMalformed) {
@@ -1680,7 +1682,7 @@ Lexer.prototype = {
         return create("(regexp)", token.value);
 
       case Token.Comment:
-        state.tokens.curr.comment = true;
+        this.state.tokens.curr.comment = true;
 
         if (token.isSpecial) {
           return {

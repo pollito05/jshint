@@ -1,28 +1,26 @@
 "use strict";
 
-var state = {
-  syntax: {},
+function State() {
+  this.tokens = {
+    prev: null,
+    next: null,
+    curr: null
+  };
 
-  reset: function () {
-    this.tokens = {
-      prev: null,
-      next: null,
-      curr: null
-    };
+  this.option = {};
+  this.ignored = {};
+  this.directive = {};
+  this.jsonMode = false;
+  this.jsonWarnings = [];
+  this.lines = [];
+  this.tab = "";
+  this.cache = {}; // Node.JS doesn't have Map. Sniff.
+  this.ignoredLines = {};
 
-    this.option = {};
-    this.ignored = {};
-    this.directive = {};
-    this.jsonMode = false;
-    this.jsonWarnings = [];
-    this.lines = [];
-    this.tab = "";
-    this.cache = {}; // Node.JS doesn't have Map. Sniff.
-    this.ignoredLines = {};
+  // Blank out non-multi-line-commented lines when ignoring linter errors
+  this.ignoreLinterErrors = false;
+}
 
-    // Blank out non-multi-line-commented lines when ignoring linter errors
-    this.ignoreLinterErrors = false;
-  }
-};
+State.prototype.syntax = {};
 
-exports.state = state;
+module.exports = State;

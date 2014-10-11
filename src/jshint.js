@@ -38,7 +38,8 @@ var vars     = require("./vars.js");
 var messages = require("./messages.js");
 var Lexer    = require("./lex.js").Lexer;
 var reg      = require("./reg.js");
-var state    = require("./state.js").state;
+var State    = require("./state.js");
+var state    = new State();
 var style    = require("./style.js");
 
 // We need this module here because environments such as IE and Rhino
@@ -4782,7 +4783,7 @@ var JSHINT = (function () {
     var newIgnoredObj = {};
 
     o = _.clone(o);
-    state.reset();
+    state = new State();
 
     if (o && o.scope) {
       JSHINT.scope = o.scope;
@@ -4937,7 +4938,7 @@ var JSHINT = (function () {
       });
     }
 
-    lex = new Lexer(s);
+    lex = new Lexer(s, state);
 
     lex.on("warning", function (ev) {
       warningAt.apply(null, [ ev.code, ev.line, ev.character].concat(ev.data));
