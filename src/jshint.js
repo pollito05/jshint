@@ -53,8 +53,7 @@ var console = require("console-browserify");
 var JSHINT = (function () {
   "use strict";
 
-  var anonname, // The guessed name for anonymous functions.
-    api, // Extension API
+  var api, // Extension API
 
     // These are operators that should not be used with the ! operator.
     bang = {
@@ -921,8 +920,8 @@ var JSHINT = (function () {
       break;
     }
 
-    if (state.tokens.curr.type === "(string)" || state.tokens.curr.identifier) {
-      anonname = state.tokens.curr.value;
+    if (state.tokens.curr.identifier) {
+      state.prevIdentifier = state.tokens.curr;
     }
 
     if (id && state.tokens.next.id !== id) {
@@ -1037,7 +1036,6 @@ var JSHINT = (function () {
     advance();
 
     if (initial) {
-      anonname = "anonymous";
       funct["(verb)"] = state.tokens.curr.value;
     }
 
@@ -1444,7 +1442,9 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
+          state.inferredFnName = state.tokens.prev;
           that.right = expression(10);
+          state.inferredFnName = null;
           return that;
         } else if (left.id === "[") {
           if (state.tokens.curr.left.first) {
@@ -1458,13 +1458,17 @@ var JSHINT = (function () {
           } else if (left.left.value === "arguments" && !state.directive["use strict"]) {
             warning("E031", that);
           }
+          state.inferredFnName = left.right;
           that.right = expression(10);
+          state.inferredFnName = null;
           return that;
         } else if (left.identifier && !isReserved(left)) {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
+          state.inferredFnName = left;
           that.right = expression(10);
+          state.inferredFnName = null;
           return that;
         }
 
@@ -2023,6 +2027,7 @@ var JSHINT = (function () {
       var s = scope[v];
       var f;
       var block;
+      var prevIdentifier;
 
       if (typeof s === "function") {
         // Protection against accidental inheritance.
@@ -2093,7 +2098,8 @@ var JSHINT = (function () {
             // display warning if we're inside of typeof or delete.
             // Attempting to subscript a null reference will throw an
             // error, even within the typeof and delete operators
-            if (!(anonname === "typeof" || anonname === "delete") ||
+            prevIdentifier = state.prevIdentifier && state.prevIdentifier.value;
+            if (!(prevIdentifier === "typeof" || prevIdentifier === "delete") ||
               (state.tokens.next &&
                 (state.tokens.next.value === "." || state.tokens.next.value === "["))) {
 
@@ -2965,12 +2971,22 @@ var JSHINT = (function () {
     var oldOption = state.option;
     var oldIgnored = state.ignored;
     var oldScope  = scope;
+    var inferredName;
+
+    if (!name) {
+      if (state.inferredFnName) {
+        inferredName = "\"" + state.inferredFnName.value + "\"";
+        state.inferredFnName = null;
+      } else {
+        inferredName = "(unknown)";
+      }
+    }
 
     state.option = Object.create(state.option);
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || "\"" + anonname + "\"", state.tokens.next, scope, {
+    funct = functor(name || inferredName, state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -3277,8 +3293,10 @@ var JSHINT = (function () {
               }
               doFunction(i, undefined, g);
             } else if (!isclassdef) {
+              state.inferredFnName = state.tokens.curr;
               advance(":");
               expression(10);
+              state.inferredFnName = null;
             }
           }
         }
@@ -3503,6 +3521,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
+        state.inferredFnName = state.tokens.curr;
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
@@ -3518,6 +3537,7 @@ var JSHINT = (function () {
         } else {
           destructuringExpressionMatch(names, value);
         }
+        state.inferredFnName = null;
       }
 
       if (state.tokens.next.id !== ",") {

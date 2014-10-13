@@ -31,5 +31,15 @@ function g() { return function h     () { return 1+1; };}
 
 // function in object
 var i = {
-	j : function () { return 1+1; }
+	j : function () { return 1+1; },
+	"k" : function() {}
 };
+
+g.then(function() {});
+
+var unrelated;
+
+// Inferred name values should not extend beyond assignment operations.
+unrelated = {}, (function() {})();
+
+unrelated.unrelated = {}, (function() {})();
