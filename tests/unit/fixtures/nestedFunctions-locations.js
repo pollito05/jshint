@@ -45,7 +45,7 @@
     "lastcharacter": 2
   },
   {
-    "name": "\"anonymous\"",
+    "name": "(unknown)",
     "line": 24,
     "character": 16,
     "last": 26,
@@ -71,5 +71,33 @@
     "character": 19,
     "last": 34,
     "lastcharacter": 36
+  },
+  {
+    "name": "\"k\"",
+    "line": 35,
+    "character": 20,
+    "last": 35,
+    "lastcharacter": 24
+  },
+  {
+    "name": "(unknown)",
+    "line": 38,
+    "character": 17,
+    "last": 38,
+    "lastcharacter": 21
+  },
+  {
+    "name": "(unknown)",
+    "line": 43,
+    "character": 27,
+    "last": 43,
+    "lastcharacter": 31
+  },
+  {
+    "name": "(unknown)",
+    "line": 45,
+    "character": 37,
+    "last": 45,
+    "lastcharacter": 41
   }
 ]
