@@ -32,7 +32,12 @@ function g() { return function h     () { return 1+1; };}
 // function in object
 var i = {
 	j : function () { return 1+1; },
-	"k" : function() {}
+	"k" : function() {},
+	23: function() {},
+	["computedStr"] : function() {},
+	["computed" + 3] : function() {},
+	get getter() {},
+	set setter() {}
 };
 
 g.then(function() {});

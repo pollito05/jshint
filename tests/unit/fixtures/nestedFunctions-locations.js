@@ -66,59 +66,94 @@
     "lastcharacter": 56
   },
   {
-    "name": "i.j",
+    "name": "j",
     "line": 34,
     "character": 19,
     "last": 34,
     "lastcharacter": 36
   },
   {
-    "name": "i[\"k\"]",
+    "name": "k",
     "line": 35,
     "character": 20,
     "last": 35,
     "lastcharacter": 24
   },
   {
-    "name": "",
+    "name": "23",
+    "line": 36,
+    "character": 18,
+    "last": 36,
+    "lastcharacter": 22
+  },
+  {
+    "name": "computedStr",
+    "line": 37,
+    "character": 32,
+    "last": 37,
+    "lastcharacter": 36
+  },
+  {
+    "name": "[expression]",
     "line": 38,
-    "character": 17,
+    "character": 33,
     "last": 38,
-    "lastcharacter": 21
+    "lastcharacter": 37
+  },
+  {
+    "name": "get getter",
+    "line": 39,
+    "character": 16,
+    "last": 39,
+    "lastcharacter": 20
+  },
+  {
+    "name": "set setter",
+    "line": 40,
+    "character": 16,
+    "last": 40,
+    "lastcharacter": 20
   },
   {
     "name": "",
     "line": 43,
-    "character": 27,
+    "character": 17,
     "last": 43,
+    "lastcharacter": 21
+  },
+  {
+    "name": "",
+    "line": 48,
+    "character": 27,
+    "last": 48,
     "lastcharacter": 31
   },
   {
     "name": "",
-    "line": 45,
+    "line": 50,
     "character": 37,
-    "last": 45,
+    "last": 50,
     "lastcharacter": 41
   },
   {
     "name": "",
-    "line": 47,
+    "line": 52,
     "character": 13,
-    "last": 47,
+    "last": 52,
     "lastcharacter": 53
   },
   {
     "name": "l",
-    "line": 47,
+    "line": 52,
     "character": 34,
-    "last": 47,
+    "last": 52,
     "lastcharacter": 38
   },
   {
-    "name": "g[expression]",
-    "line": 47,
+    "name": "[expression]",
+    "line": 52,
     "character": 69,
-    "last": 47,
+    "last": 52,
     "lastcharacter": 73
   }
 ]
