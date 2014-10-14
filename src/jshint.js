@@ -1005,7 +1005,7 @@ var JSHINT = (function () {
   function expression(rbp, initial) {
     var left, isArray = false, isObject = false, isLetExpr = false;
 
-    state.inferredFnNames.push(null);
+    state.inferredFnNames.push();
     var tmp = state.inferredFnNames.length;
     // if current expression is a let expression
     if (!initial && state.tokens.next.value === "let" && peek(0).value === "(") {
@@ -1455,7 +1455,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.setFnName(state.tokens.prev);
+          state.inferredFnNames.set(state.tokens.prev);
           that.right = expression(10);
           return that;
         } else if (left.id === "[") {
@@ -1472,9 +1472,9 @@ var JSHINT = (function () {
           }
 
           if (left.right && left.right.type == "(string)") {
-            state.setFnName(left.right);
+            state.inferredFnNames.set(left.right);
           } else {
-            state.setFnName(exprName);
+            state.inferredFnNames.set(exprName);
           }
 
           that.right = expression(10);
@@ -1483,7 +1483,7 @@ var JSHINT = (function () {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
-          state.setFnName(left);
+          state.inferredFnNames.set(left);
           that.right = expression(10);
           return that;
         }
@@ -2497,12 +2497,12 @@ var JSHINT = (function () {
   infix(".", function (left, that) {
     if (left.right && typeof left.right !== "string") {
       if (left.right.type === "(string)") {
-        state.setFnName(left.right);
+        state.inferredFnNames.set(left.right);
       } else {
-        state.setFnName(exprName);
+        state.inferredFnNames.set(exprName);
       }
     } else {
-      state.setFnName(state.tokens.prev);
+      state.inferredFnNames.set(state.tokens.prev);
     }
     var m = identifier(false, true);
 
@@ -2558,7 +2558,7 @@ var JSHINT = (function () {
 
     if (state.tokens.next.id !== ")") {
       // TODO: Figure out if this can be avoided
-      state.inferredFnNames.push(null);
+      state.inferredFnNames.push();
       for (;;) {
         p[p.length] = expression(10);
         n += 1;
@@ -2685,7 +2685,7 @@ var JSHINT = (function () {
   application("=>");
 
   infix("[", function (left, that) {
-    state.setFnName(state.tokens.prev);
+    state.inferredFnNames.set(state.tokens.prev);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {
@@ -3003,7 +3003,7 @@ var JSHINT = (function () {
     var inferredName;
 
     if (!name) {
-      inferredName = state.inferFnName();
+      inferredName = state.inferredFnNames.infer();
       //console.log(state.inferFnNames());
       //console.dir(inferredName);
     }
@@ -3214,8 +3214,8 @@ var JSHINT = (function () {
           }
 
           state.tokens.next.getterName = true;
-          state.setFnName(state.tokens.next);
-          state.inferredFnNames.push(null);
+          state.inferredFnNames.set(state.tokens.next);
+          state.inferredFnNames.push();
           i = propertyName();
 
           // ES6 allows for get() {...} and set() {...} method
@@ -3253,8 +3253,8 @@ var JSHINT = (function () {
           }
 
           state.tokens.next.setterName = true;
-          state.setFnName(state.tokens.next);
-          state.inferredFnNames.push(null);
+          state.inferredFnNames.set(state.tokens.next);
+          state.inferredFnNames.push();
           i = propertyName();
 
           // ES6 allows for get() {...} and set() {...} method
@@ -3313,14 +3313,14 @@ var JSHINT = (function () {
               i = expression(10);
 
               if (i.type === "(string)") {
-                state.setFnName(i);
+                state.inferredFnNames.set(i);
               } else {
-                state.setFnName(exprName);
+                state.inferredFnNames.set(exprName);
               }
 
               advance("]");
             } else {
-              state.setFnName(state.tokens.next);
+              state.inferredFnNames.set(state.tokens.next);
               i = propertyName();
 
               saveProperty(tag + i, state.tokens.next);
@@ -3562,7 +3562,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
-        state.setFnName(state.tokens.curr);
+        state.inferredFnNames.set(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
