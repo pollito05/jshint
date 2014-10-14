@@ -33,7 +33,7 @@ NameStack.prototype.infer = function() {
     return "";
   }
 
-  if (nameToken.exprName) {
+  if (nameToken.type !== "(string)" && nameToken.type !== "(number)" && nameToken.type !== "(identifier)") {
     return "[expression]";
   }
 

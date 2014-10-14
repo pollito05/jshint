@@ -55,8 +55,6 @@ var JSHINT = (function () {
 
   var api, // Extension API
 
-    exprName = { exprName: true },
-
     // These are operators that should not be used with the ! operator.
     bang = {
       "<"  : true,
@@ -1465,11 +1463,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          if (left.right && left.right.type == "(string)") {
-            state.inferredFnNames.set(left.right);
-          } else {
-            state.inferredFnNames.set(exprName);
-          }
+          state.inferredFnNames.set(left);
 
           that.right = expression(10);
           return that;
@@ -2489,15 +2483,6 @@ var JSHINT = (function () {
   prefix("void").exps = true;
 
   infix(".", function (left, that) {
-    if (left.right && typeof left.right !== "string") {
-      if (left.right.type === "(string)") {
-        state.inferredFnNames.set(left.right);
-      } else {
-        state.inferredFnNames.set(exprName);
-      }
-    } else {
-      state.inferredFnNames.set(state.tokens.prev);
-    }
     var m = identifier(false, true);
 
     if (typeof m === "string") {
@@ -3304,11 +3289,7 @@ var JSHINT = (function () {
               }
               i = expression(10);
 
-              if (i.type === "(string)") {
-                state.inferredFnNames.set(i);
-              } else {
-                state.inferredFnNames.set(exprName);
-              }
+              state.inferredFnNames.set(i);
 
               advance("]");
             } else {
