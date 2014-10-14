@@ -3184,6 +3184,11 @@ var JSHINT = (function () {
 
           state.tokens.next.getterName = true;
           state.nameStack.set(state.tokens.next);
+          // Because `doFunction` is most commonly called as part of a Function
+          // expression, it has been written to ignore the topmost entry on the
+          // name stack. This form of function declaration does not require an
+          // additional expression, so a "dummy" name must be pushed to the
+          // stack.
           state.nameStack.push();
           i = propertyName();
 
@@ -3223,6 +3228,11 @@ var JSHINT = (function () {
 
           state.tokens.next.setterName = true;
           state.nameStack.set(state.tokens.next);
+          // Because `doFunction` is most commonly called as part of a Function
+          // expression, it has been written to ignore the topmost entry on the
+          // name stack. This form of function declaration does not require an
+          // additional expression, so a "dummy" name must be pushed to the
+          // stack.
           state.nameStack.push();
           i = propertyName();
 
