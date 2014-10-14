@@ -30,7 +30,7 @@
     "lastcharacter": 2
   },
   {
-    "name": "\"e\"",
+    "name": "e",
     "param": ["x", "y"],
     "line": 16,
     "character": 23,
@@ -45,7 +45,7 @@
     "lastcharacter": 2
   },
   {
-    "name": "(unknown)",
+    "name": "",
     "line": 24,
     "character": 16,
     "last": 26,
@@ -66,28 +66,28 @@
     "lastcharacter": 56
   },
   {
-    "name": "\"j\"",
+    "name": "i.j",
     "line": 34,
     "character": 19,
     "last": 34,
     "lastcharacter": 36
   },
   {
-    "name": "\"k\"",
+    "name": "i[\"k\"]",
     "line": 35,
     "character": 20,
     "last": 35,
     "lastcharacter": 24
   },
   {
-    "name": "(unknown)",
+    "name": "",
     "line": 38,
     "character": 17,
     "last": 38,
     "lastcharacter": 21
   },
   {
-    "name": "(unknown)",
+    "name": "",
     "line": 43,
     "character": 27,
     "last": 43,

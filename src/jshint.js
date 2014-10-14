@@ -1479,6 +1479,7 @@ var JSHINT = (function () {
           }
           state.inferredFnNames.push(left);
           that.right = expression(10);
+          state.inferredFnNames.pop();
           return that;
         }
 
@@ -2534,6 +2535,9 @@ var JSHINT = (function () {
       warning("W062");
     }
 
+    // Invoking a function
+    state.inferredFnNames.length = 0;
+
     var n = 0;
     var p = [];
 
@@ -3312,6 +3316,7 @@ var JSHINT = (function () {
               state.inferredFnNames.push(state.tokens.curr);
               advance(":");
               expression(10);
+              state.inferredFnNames.pop();
             }
           }
         }
@@ -3552,6 +3557,8 @@ var JSHINT = (function () {
         } else {
           destructuringExpressionMatch(names, value);
         }
+
+        state.inferredFnNames.pop();
       }
 
       if (state.tokens.next.id !== ",") {
