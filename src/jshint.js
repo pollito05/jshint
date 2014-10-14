@@ -1006,7 +1006,7 @@ var JSHINT = (function () {
     var left, isArray = false, isObject = false, isLetExpr = false;
 
     state.inferredFnNames.push();
-    var tmp = state.inferredFnNames.length;
+
     // if current expression is a let expression
     if (!initial && state.tokens.next.value === "let" && peek(0).value === "(") {
       if (!state.option.inMoz(true)) {
@@ -1095,13 +1095,7 @@ var JSHINT = (function () {
       funct["(blockscope)"].unstack();
     }
 
-    // Any previously-inferred function name will be irrelevant after a
-    // complete expression has been parsed.
-    //state.inferredFnNames.length = 0;
-
-    if (state.inferredFnNames.length === tmp) {
-      state.inferredFnNames.pop();
-    }
+    state.inferredFnNames.pop();
 
     return left;
   }
@@ -3143,8 +3137,6 @@ var JSHINT = (function () {
       var b, f, i, p, t, g;
       var props = {}; // All properties, including accessors
       var tag = "";
-
-      state.inferredFnNames.pop();
 
       function saveProperty(name, tkn) {
 
