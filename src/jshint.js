@@ -1005,7 +1005,7 @@ var JSHINT = (function () {
   function expression(rbp, initial) {
     var left, isArray = false, isObject = false, isLetExpr = false;
 
-    state.inferredFnNames.push([]);
+    state.inferredFnNames.push(null);
     var tmp = state.inferredFnNames.length;
     // if current expression is a let expression
     if (!initial && state.tokens.next.value === "let" && peek(0).value === "(") {
@@ -1455,7 +1455,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.pushFnName(state.tokens.prev);
+          state.setFnName(state.tokens.prev);
           that.right = expression(10);
           return that;
         } else if (left.id === "[") {
@@ -1472,9 +1472,9 @@ var JSHINT = (function () {
           }
 
           if (left.right && left.right.type == "(string)") {
-            state.pushFnName(left.right);
+            state.setFnName(left.right);
           } else {
-            state.pushFnName(exprName);
+            state.setFnName(exprName);
           }
 
           that.right = expression(10);
@@ -1483,9 +1483,8 @@ var JSHINT = (function () {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
-          state.pushFnName(left);
+          state.setFnName(left);
           that.right = expression(10);
-          state.popFnName();
           return that;
         }
 
@@ -2498,12 +2497,12 @@ var JSHINT = (function () {
   infix(".", function (left, that) {
     if (left.right && typeof left.right !== "string") {
       if (left.right.type === "(string)") {
-        state.pushFnName(left.right);
+        state.setFnName(left.right);
       } else {
-        state.pushFnName(exprName);
+        state.setFnName(exprName);
       }
     } else {
-      state.pushFnName(state.tokens.prev);
+      state.setFnName(state.tokens.prev);
     }
     var m = identifier(false, true);
 
@@ -2559,7 +2558,7 @@ var JSHINT = (function () {
 
     if (state.tokens.next.id !== ")") {
       // TODO: Figure out if this can be avoided
-      state.inferredFnNames.push([]);
+      state.inferredFnNames.push(null);
       for (;;) {
         p[p.length] = expression(10);
         n += 1;
@@ -2686,7 +2685,7 @@ var JSHINT = (function () {
   application("=>");
 
   infix("[", function (left, that) {
-    state.pushFnName(state.tokens.prev);
+    state.setFnName(state.tokens.prev);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {
@@ -3214,6 +3213,9 @@ var JSHINT = (function () {
             error("E034");
           }
 
+          state.tokens.next.getterName = true;
+          state.setFnName(state.tokens.next);
+          state.inferredFnNames.push(null);
           i = propertyName();
 
           // ES6 allows for get() {...} and set() {...} method
@@ -3250,6 +3252,9 @@ var JSHINT = (function () {
             error("E034");
           }
 
+          state.tokens.next.setterName = true;
+          state.setFnName(state.tokens.next);
+          state.inferredFnNames.push(null);
           i = propertyName();
 
           // ES6 allows for get() {...} and set() {...} method
@@ -3306,9 +3311,18 @@ var JSHINT = (function () {
                 warning("W119", state.tokens.curr, "computed property names");
               }
               i = expression(10);
+
+              if (i.type === "(string)") {
+                state.setFnName(i);
+              } else {
+                state.setFnName(exprName);
+              }
+
               advance("]");
             } else {
+              state.setFnName(state.tokens.next);
               i = propertyName();
+
               saveProperty(tag + i, state.tokens.next);
 
               if (typeof i !== "string") {
@@ -3322,10 +3336,8 @@ var JSHINT = (function () {
               }
               doFunction(i, undefined, g);
             } else if (!isclassdef) {
-              state.pushFnName(state.tokens.curr);
               advance(":");
               expression(10);
-              state.popFnName();
             }
           }
         }
@@ -3550,7 +3562,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
-        state.pushFnName(state.tokens.curr);
+        state.setFnName(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);

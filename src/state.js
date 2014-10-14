@@ -25,12 +25,8 @@ var state = {
     this.ignoreLinterErrors = false;
   },
 
-  pushFnName: function(nameToken) {
-    this.inferredFnNames[this.inferredFnNames.length - 1].push(nameToken);
-  },
-
-  popFnName: function() {
-    this.inferredFnNames[this.inferredFnNames.length - 1].pop();
+  setFnName: function(nameToken) {
+    this.inferredFnNames[this.inferredFnNames.length - 1] = nameToken;
   },
 
   inferFnName: function() {
@@ -43,19 +39,24 @@ var state = {
   },
 
   _inferFnName: function(idx) {
-    var names = this.inferredFnNames[idx];
-    if (!names || names.length === 0) {
+    var nameToken = this.inferredFnNames[idx];
+    var prefix = "";
+
+    if (!nameToken) {
       return "";
     }
 
-    return names.map(function(token, idx) {
-      if (token.type === "(string)") {
-        return "[\"" + token.value + "\"]";
-      } else if (token.exprName) {
-        return "[expression]";
-      }
-      return (idx > 0 ? "." : "") + token.value;
-    }).join("");
+    if (nameToken.exprName) {
+      return "[expression]";
+    }
+
+    if (nameToken.setterName) {
+      prefix = "set ";
+    } else if (nameToken.getterName) {
+      prefix = "get ";
+    }
+
+    return prefix + nameToken.value;
   }
 };
 
