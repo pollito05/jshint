@@ -1003,7 +1003,7 @@ var JSHINT = (function () {
   function expression(rbp, initial) {
     var left, isArray = false, isObject = false, isLetExpr = false;
 
-    state.inferredFnNames.push();
+    state.nameStack.push();
 
     // if current expression is a let expression
     if (!initial && state.tokens.next.value === "let" && peek(0).value === "(") {
@@ -1093,7 +1093,7 @@ var JSHINT = (function () {
       funct["(blockscope)"].unstack();
     }
 
-    state.inferredFnNames.pop();
+    state.nameStack.pop();
 
     return left;
   }
@@ -1447,7 +1447,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.inferredFnNames.set(state.tokens.prev);
+          state.nameStack.set(state.tokens.prev);
           that.right = expression(10);
           return that;
         } else if (left.id === "[") {
@@ -1463,7 +1463,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.inferredFnNames.set(left.right);
+          state.nameStack.set(left.right);
 
           that.right = expression(10);
           return that;
@@ -1471,7 +1471,7 @@ var JSHINT = (function () {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
-          state.inferredFnNames.set(left);
+          state.nameStack.set(left);
           that.right = expression(10);
           return that;
         }
@@ -2980,7 +2980,7 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || state.inferredFnNames.infer(), state.tokens.next, scope, {
+    funct = functor(name || state.nameStack.infer(), state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -3181,8 +3181,8 @@ var JSHINT = (function () {
           }
 
           state.tokens.next.getterName = true;
-          state.inferredFnNames.set(state.tokens.next);
-          state.inferredFnNames.push();
+          state.nameStack.set(state.tokens.next);
+          state.nameStack.push();
           i = propertyName();
 
           // ES6 allows for get() {...} and set() {...} method
@@ -3220,8 +3220,8 @@ var JSHINT = (function () {
           }
 
           state.tokens.next.setterName = true;
-          state.inferredFnNames.set(state.tokens.next);
-          state.inferredFnNames.push();
+          state.nameStack.set(state.tokens.next);
+          state.nameStack.push();
           i = propertyName();
 
           // ES6 allows for get() {...} and set() {...} method
@@ -3279,11 +3279,11 @@ var JSHINT = (function () {
               }
               i = expression(10);
 
-              state.inferredFnNames.set(i);
+              state.nameStack.set(i);
 
               advance("]");
             } else {
-              state.inferredFnNames.set(state.tokens.next);
+              state.nameStack.set(state.tokens.next);
               i = propertyName();
 
               if (isclassdef && i === "constructor") {
@@ -3529,7 +3529,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
-        state.inferredFnNames.set(state.tokens.curr);
+        state.nameStack.set(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
@@ -3654,7 +3654,7 @@ var JSHINT = (function () {
       // BindingIdentifier(opt)
       this.name = identifier();
     } else {
-      this.name = state.inferredFnNames.infer();
+      this.name = state.nameStack.infer();
     }
     classtail(this);
     return this;
