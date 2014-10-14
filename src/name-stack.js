@@ -28,12 +28,15 @@ NameStack.prototype.infer = function() {
   var prevExprIdx = this.length - 2;
   var nameToken = this._stack[prevExprIdx];
   var prefix = "";
+  var type;
 
   if (!nameToken) {
     return "";
   }
 
-  if (nameToken.type !== "(string)" && nameToken.type !== "(number)" && nameToken.type !== "(identifier)") {
+  type = nameToken.type;
+
+  if (type !== "(string)" && type !== "(number)" && type !== "(identifier)") {
     return "[expression]";
   }
 
