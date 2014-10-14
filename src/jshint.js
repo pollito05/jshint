@@ -55,6 +55,8 @@ var JSHINT = (function () {
 
   var api, // Extension API
 
+    exprName = { exprName: true },
+
     // These are operators that should not be used with the ! operator.
     bang = {
       "<"  : true,
@@ -1090,6 +1092,11 @@ var JSHINT = (function () {
     if (isLetExpr) {
       funct["(blockscope)"].unstack();
     }
+
+    // Any previously-inferred function name will be irrelevant after a
+    // complete expression has been parsed.
+    //state.inferredFnNames.length = 0;
+
     return left;
   }
 
@@ -1442,9 +1449,8 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.inferredFnName = state.tokens.prev;
+          state.inferredFnNames.push(state.tokens.prev);
           that.right = expression(10);
-          state.inferredFnName = null;
           return that;
         } else if (left.id === "[") {
           if (state.tokens.curr.left.first) {
@@ -1458,17 +1464,21 @@ var JSHINT = (function () {
           } else if (left.left.value === "arguments" && !state.directive["use strict"]) {
             warning("E031", that);
           }
-          state.inferredFnName = left.right;
+
+          if (left.right.type == '(string)') {
+            state.inferredFnNames.push(left.right);
+          } else {
+            state.inferredFnNames.push(exprName);
+          }
+
           that.right = expression(10);
-          state.inferredFnName = null;
           return that;
         } else if (left.identifier && !isReserved(left)) {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
-          state.inferredFnName = left;
+          state.inferredFnNames.push(left);
           that.right = expression(10);
-          state.inferredFnName = null;
           return that;
         }
 
@@ -1757,6 +1767,7 @@ var JSHINT = (function () {
 
     indent = i;
     scope = s;
+    state.inferredFnNames.length = 0;
     return r;
   }
 
@@ -2479,6 +2490,15 @@ var JSHINT = (function () {
   prefix("void").exps = true;
 
   infix(".", function (left, that) {
+    if (left.right && typeof left.right !== "string") {
+      if (left.right.type === "(string)") {
+        state.inferredFnNames.push(left.right);
+      } else {
+        state.inferredFnNames.push(exprName);
+      }
+    } else {
+      state.inferredFnNames.push(state.tokens.prev);
+    }
     var m = identifier(false, true);
 
     if (typeof m === "string") {
@@ -2657,6 +2677,7 @@ var JSHINT = (function () {
   application("=>");
 
   infix("[", function (left, that) {
+    state.inferredFnNames.push(state.tokens.prev);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {
@@ -2974,12 +2995,7 @@ var JSHINT = (function () {
     var inferredName;
 
     if (!name) {
-      if (state.inferredFnName) {
-        inferredName = "\"" + state.inferredFnName.value + "\"";
-        state.inferredFnName = null;
-      } else {
-        inferredName = "(unknown)";
-      }
+      inferredName = state.inferFnName();
     }
 
     state.option = Object.create(state.option);
@@ -3293,10 +3309,9 @@ var JSHINT = (function () {
               }
               doFunction(i, undefined, g);
             } else if (!isclassdef) {
-              state.inferredFnName = state.tokens.curr;
+              state.inferredFnNames.push(state.tokens.curr);
               advance(":");
               expression(10);
-              state.inferredFnName = null;
             }
           }
         }
@@ -3521,7 +3536,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
-        state.inferredFnName = state.tokens.curr;
+        state.inferredFnNames.push(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
@@ -3537,7 +3552,6 @@ var JSHINT = (function () {
         } else {
           destructuringExpressionMatch(names, value);
         }
-        state.inferredFnName = null;
       }
 
       if (state.tokens.next.id !== ",") {
