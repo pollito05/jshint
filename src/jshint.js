@@ -2536,8 +2536,6 @@ var JSHINT = (function () {
     }
 
     if (state.tokens.next.id !== ")") {
-      // TODO: Figure out if this can be avoided
-      state.inferredFnNames.push();
       for (;;) {
         p[p.length] = expression(10);
         n += 1;
@@ -2546,7 +2544,6 @@ var JSHINT = (function () {
         }
         comma();
       }
-      state.inferredFnNames.pop();
     }
 
     advance(")");
