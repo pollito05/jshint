@@ -2980,7 +2980,9 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || state.nameStack.infer(), state.tokens.next, scope, {
+    // Ignore the most recent name on the stack--it was created in response to
+    // this function expression.
+    funct = functor(name || state.nameStack.infer(-1), state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -3654,7 +3656,9 @@ var JSHINT = (function () {
       // BindingIdentifier(opt)
       this.name = identifier();
     } else {
-      this.name = state.nameStack.infer();
+      // Ignore the most recent name on the stack--it was created in response
+      // to this class defintion.
+      this.name = state.nameStack.infer(-1);
     }
     classtail(this);
     return this;
