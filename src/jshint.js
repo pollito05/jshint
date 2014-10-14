@@ -1449,7 +1449,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          funct["(inferredFnNames)"].push(state.tokens.prev);
+          state.pushFnName(state.tokens.prev);
           that.right = expression(10);
           return that;
         } else if (left.id === "[") {
@@ -1466,9 +1466,9 @@ var JSHINT = (function () {
           }
 
           if (left.right.type == '(string)') {
-            funct["(inferredFnNames)"].push(left.right);
+            state.pushFnName(left.right);
           } else {
-            funct["(inferredFnNames)"].push(exprName);
+            state.pushFnName(exprName);
           }
 
           that.right = expression(10);
@@ -1477,9 +1477,9 @@ var JSHINT = (function () {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
-          funct["(inferredFnNames)"].push(left);
+          state.pushFnName(left);
           that.right = expression(10);
-          funct["(inferredFnNames)"].pop();
+          state.popFnName();
           return that;
         }
 
@@ -1660,9 +1660,11 @@ var JSHINT = (function () {
   function statement() {
     var values;
     var i = indent, r, s = scope, t = state.tokens.next;
+    state.inferredFnNames.push([]);
 
     if (t.id === ";") {
       advance(";");
+      state.inferredFnNames.pop();
       return;
     }
 
@@ -1691,6 +1693,7 @@ var JSHINT = (function () {
         advance("from");
         advance("(string)");
         parseFinalSemicolon();
+        state.inferredFnNames.pop();
         return;
       }
     }
@@ -1708,6 +1711,7 @@ var JSHINT = (function () {
         advance("=");
         destructuringExpressionMatch(values, expression(10, true));
         advance(";");
+        state.inferredFnNames.pop();
         return;
       }
     }
@@ -1737,6 +1741,7 @@ var JSHINT = (function () {
       //  }
       var iscase = (funct["(verb)"] === "case" && state.tokens.curr.value === ":");
       block(true, true, false, false, iscase);
+      state.inferredFnNames.pop();
       return;
     }
 
@@ -1768,7 +1773,7 @@ var JSHINT = (function () {
 
     indent = i;
     scope = s;
-    funct["(inferredFnNames)"].length = 0;
+    state.inferredFnNames.pop();
     return r;
   }
 
@@ -2493,12 +2498,12 @@ var JSHINT = (function () {
   infix(".", function (left, that) {
     if (left.right && typeof left.right !== "string") {
       if (left.right.type === "(string)") {
-        funct["(inferredFnNames)"].push(left.right);
+        state.pushFnName(left.right);
       } else {
-        funct["(inferredFnNames)"].push(exprName);
+        state.pushFnName(exprName);
       }
     } else {
-      funct["(inferredFnNames)"].push(state.tokens.prev);
+      state.pushFnName(state.tokens.prev);
     }
     var m = identifier(false, true);
 
@@ -2534,9 +2539,6 @@ var JSHINT = (function () {
     if (state.option.immed && left && !left.immed && left.id === "function") {
       warning("W062");
     }
-
-    // Invoking a function
-    funct["(inferredFnNames)"].length = 0;
 
     var n = 0;
     var p = [];
@@ -2681,7 +2683,8 @@ var JSHINT = (function () {
   application("=>");
 
   infix("[", function (left, that) {
-    funct["(inferredFnNames)"].push(state.tokens.prev);
+    state.pushFnName(state.tokens.prev);
+    state.inferredFnNames.push([]);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {
@@ -2697,6 +2700,7 @@ var JSHINT = (function () {
       }
     }
     advance("]", that);
+    state.inferredFnNames.pop();
 
     if (e && e.value === "hasOwnProperty" && state.tokens.next.value === "=") {
       warning("W001");
@@ -2954,8 +2958,7 @@ var JSHINT = (function () {
       "(blockscope)": null,
       "(comparray)" : null,
       "(generator)" : null,
-      "(params)"    : null,
-      "(inferredFnNames)": []
+      "(params)"    : null
     };
 
     if (token) {
@@ -2965,20 +2968,6 @@ var JSHINT = (function () {
         "(metrics)"  : createMetrics(token)
       });
     }
-    funct.inferFnName = function() {
-      if (this["(inferredFnNames)"].length === 0) {
-        return "";
-      }
-
-      return this["(inferredFnNames)"].map(function(token, idx) {
-        if (token.type === "(string)") {
-          return "[\"" + token.value + "\"]";
-        } else if (token.exprName) {
-          return "[expression]";
-        }
-        return (idx > 0 ? "." : "") + token.value;
-      }).join("");
-    };
 
     _.extend(funct, overwrites);
 
@@ -3014,7 +3003,7 @@ var JSHINT = (function () {
     var inferredName;
 
     if (!name) {
-      inferredName = funct.inferFnName();
+      inferredName = state.inferFnName();
     }
 
     state.option = Object.create(state.option);
@@ -3328,10 +3317,10 @@ var JSHINT = (function () {
               }
               doFunction(i, undefined, g);
             } else if (!isclassdef) {
-              funct["(inferredFnNames)"].push(state.tokens.curr);
+              state.pushFnName(state.tokens.curr);
               advance(":");
               expression(10);
-              funct["(inferredFnNames)"].pop();
+              state.popFnName();
             }
           }
         }
@@ -3556,7 +3545,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
-        funct["(inferredFnNames)"].push(state.tokens.curr);
+        state.pushFnName(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
@@ -3573,7 +3562,7 @@ var JSHINT = (function () {
           destructuringExpressionMatch(names, value);
         }
 
-        funct["(inferredFnNames)"].pop();
+        state.popFnName();
       }
 
       if (state.tokens.next.id !== ",") {
