@@ -50,3 +50,8 @@ unrelated = {}, (function() {})();
 unrelated.unrelated = {}, (function() {})();
 
 g[(function() { var l = function() {}; return l(); }())] = function() {};
+
+g.viaDot = function() {};
+
+g["viaBracket"] = function() {};
+g["expr" + g + "ession"] = function() {};

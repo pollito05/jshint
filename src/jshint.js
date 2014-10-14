@@ -1463,7 +1463,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.inferredFnNames.set(left);
+          state.inferredFnNames.set(left.right);
 
           that.right = expression(10);
           return that;
@@ -2664,7 +2664,6 @@ var JSHINT = (function () {
   application("=>");
 
   infix("[", function (left, that) {
-    state.inferredFnNames.set(state.tokens.prev);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {

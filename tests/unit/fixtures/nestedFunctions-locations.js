@@ -155,5 +155,26 @@
     "character": 69,
     "last": 52,
     "lastcharacter": 73
+  },
+  {
+    "name": "viaDot",
+    "line": 54,
+    "character": 21,
+    "last": 54,
+    "lastcharacter": 25
+  },
+  {
+    "name": "viaBracket",
+    "line": 56,
+    "character": 28,
+    "last": 56,
+    "lastcharacter": 32
+  },
+  {
+    "name": "[expression]",
+    "line": 57,
+    "character": 37,
+    "last": 57,
+    "lastcharacter": 41
   }
 ]
