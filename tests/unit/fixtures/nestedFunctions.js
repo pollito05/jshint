@@ -63,3 +63,5 @@ var VarDeclClass = class {
   get getter() {}                  // "get getter"
   set setter() {}                  // "set setter"
 };
+
+var grouping = (function() {});
