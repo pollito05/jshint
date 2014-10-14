@@ -1449,7 +1449,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          state.inferredFnNames.push(state.tokens.prev);
+          funct["(inferredFnNames)"].push(state.tokens.prev);
           that.right = expression(10);
           return that;
         } else if (left.id === "[") {
@@ -1466,9 +1466,9 @@ var JSHINT = (function () {
           }
 
           if (left.right.type == '(string)') {
-            state.inferredFnNames.push(left.right);
+            funct["(inferredFnNames)"].push(left.right);
           } else {
-            state.inferredFnNames.push(exprName);
+            funct["(inferredFnNames)"].push(exprName);
           }
 
           that.right = expression(10);
@@ -1477,9 +1477,9 @@ var JSHINT = (function () {
           if (funct[left.value] === "exception") {
             warning("W022", left);
           }
-          state.inferredFnNames.push(left);
+          funct["(inferredFnNames)"].push(left);
           that.right = expression(10);
-          state.inferredFnNames.pop();
+          funct["(inferredFnNames)"].pop();
           return that;
         }
 
@@ -1768,7 +1768,7 @@ var JSHINT = (function () {
 
     indent = i;
     scope = s;
-    state.inferredFnNames.length = 0;
+    funct["(inferredFnNames)"].length = 0;
     return r;
   }
 
@@ -2493,12 +2493,12 @@ var JSHINT = (function () {
   infix(".", function (left, that) {
     if (left.right && typeof left.right !== "string") {
       if (left.right.type === "(string)") {
-        state.inferredFnNames.push(left.right);
+        funct["(inferredFnNames)"].push(left.right);
       } else {
-        state.inferredFnNames.push(exprName);
+        funct["(inferredFnNames)"].push(exprName);
       }
     } else {
-      state.inferredFnNames.push(state.tokens.prev);
+      funct["(inferredFnNames)"].push(state.tokens.prev);
     }
     var m = identifier(false, true);
 
@@ -2536,7 +2536,7 @@ var JSHINT = (function () {
     }
 
     // Invoking a function
-    state.inferredFnNames.length = 0;
+    funct["(inferredFnNames)"].length = 0;
 
     var n = 0;
     var p = [];
@@ -2681,7 +2681,7 @@ var JSHINT = (function () {
   application("=>");
 
   infix("[", function (left, that) {
-    state.inferredFnNames.push(state.tokens.prev);
+    funct["(inferredFnNames)"].push(state.tokens.prev);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {
@@ -2954,7 +2954,8 @@ var JSHINT = (function () {
       "(blockscope)": null,
       "(comparray)" : null,
       "(generator)" : null,
-      "(params)"    : null
+      "(params)"    : null,
+      "(inferredFnNames)": []
     };
 
     if (token) {
@@ -2964,6 +2965,20 @@ var JSHINT = (function () {
         "(metrics)"  : createMetrics(token)
       });
     }
+    funct.inferFnName = function() {
+      if (this["(inferredFnNames)"].length === 0) {
+        return "";
+      }
+
+      return this["(inferredFnNames)"].map(function(token, idx) {
+        if (token.type === "(string)") {
+          return "[\"" + token.value + "\"]";
+        } else if (token.exprName) {
+          return "[expression]";
+        }
+        return (idx > 0 ? "." : "") + token.value;
+      }).join("");
+    };
 
     _.extend(funct, overwrites);
 
@@ -2999,7 +3014,7 @@ var JSHINT = (function () {
     var inferredName;
 
     if (!name) {
-      inferredName = state.inferFnName();
+      inferredName = funct.inferFnName();
     }
 
     state.option = Object.create(state.option);
@@ -3313,10 +3328,10 @@ var JSHINT = (function () {
               }
               doFunction(i, undefined, g);
             } else if (!isclassdef) {
-              state.inferredFnNames.push(state.tokens.curr);
+              funct["(inferredFnNames)"].push(state.tokens.curr);
               advance(":");
               expression(10);
-              state.inferredFnNames.pop();
+              funct["(inferredFnNames)"].pop();
             }
           }
         }
@@ -3541,7 +3556,7 @@ var JSHINT = (function () {
       this.first = this.first.concat(names);
 
       if (state.tokens.next.id === "=") {
-        state.inferredFnNames.push(state.tokens.curr);
+        funct["(inferredFnNames)"].push(state.tokens.curr);
         advance("=");
         if (state.tokens.next.id === "undefined") {
           warning("W080", state.tokens.prev, state.tokens.prev.value);
@@ -3558,7 +3573,7 @@ var JSHINT = (function () {
           destructuringExpressionMatch(names, value);
         }
 
-        state.inferredFnNames.pop();
+        funct["(inferredFnNames)"].pop();
       }
 
       if (state.tokens.next.id !== ",") {

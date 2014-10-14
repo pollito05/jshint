@@ -99,5 +99,26 @@
     "character": 37,
     "last": 45,
     "lastcharacter": 41
+  },
+  {
+    "name": "",
+    "line": 47,
+    "character": 13,
+    "last": 47,
+    "lastcharacter": 53
+  },
+  {
+    "name": "l",
+    "line": 47,
+    "character": 34,
+    "last": 47,
+    "lastcharacter": 38
+  },
+  {
+    "name": "g[expression]",
+    "line": 47,
+    "character": 69,
+    "last": 47,
+    "lastcharacter": 73
   }
 ]

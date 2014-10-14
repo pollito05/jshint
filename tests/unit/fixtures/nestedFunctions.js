@@ -43,3 +43,5 @@ var unrelated;
 unrelated = {}, (function() {})();
 
 unrelated.unrelated = {}, (function() {})();
+
+g[(function() { var l = function() {}; return l(); }())] = function() {};
