@@ -2975,19 +2975,12 @@ var JSHINT = (function () {
     var oldOption = state.option;
     var oldIgnored = state.ignored;
     var oldScope  = scope;
-    var inferredName;
-
-    if (!name) {
-      inferredName = state.inferredFnNames.infer();
-      //console.log(state.inferFnNames());
-      //console.dir(inferredName);
-    }
 
     state.option = Object.create(state.option);
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || inferredName, state.tokens.next, scope, {
+    funct = functor(name || state.inferredFnNames.infer(), state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
