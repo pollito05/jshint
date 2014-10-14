@@ -94,7 +94,7 @@
     "lastcharacter": 31
   },
   {
-    "name": "(unknown)",
+    "name": "",
     "line": 45,
     "character": 37,
     "last": 45,

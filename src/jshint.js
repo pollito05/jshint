@@ -1005,6 +1005,8 @@ var JSHINT = (function () {
   function expression(rbp, initial) {
     var left, isArray = false, isObject = false, isLetExpr = false;
 
+    state.inferredFnNames.push([]);
+    var tmp = state.inferredFnNames.length;
     // if current expression is a let expression
     if (!initial && state.tokens.next.value === "let" && peek(0).value === "(") {
       if (!state.option.inMoz(true)) {
@@ -1096,6 +1098,10 @@ var JSHINT = (function () {
     // Any previously-inferred function name will be irrelevant after a
     // complete expression has been parsed.
     //state.inferredFnNames.length = 0;
+
+    if (state.inferredFnNames.length === tmp) {
+      state.inferredFnNames.pop();
+    }
 
     return left;
   }
@@ -1465,7 +1471,7 @@ var JSHINT = (function () {
             warning("E031", that);
           }
 
-          if (left.right.type == '(string)') {
+          if (left.right && left.right.type == "(string)") {
             state.pushFnName(left.right);
           } else {
             state.pushFnName(exprName);
@@ -1660,11 +1666,9 @@ var JSHINT = (function () {
   function statement() {
     var values;
     var i = indent, r, s = scope, t = state.tokens.next;
-    state.inferredFnNames.push([]);
 
     if (t.id === ";") {
       advance(";");
-      state.inferredFnNames.pop();
       return;
     }
 
@@ -1693,7 +1697,6 @@ var JSHINT = (function () {
         advance("from");
         advance("(string)");
         parseFinalSemicolon();
-        state.inferredFnNames.pop();
         return;
       }
     }
@@ -1711,7 +1714,6 @@ var JSHINT = (function () {
         advance("=");
         destructuringExpressionMatch(values, expression(10, true));
         advance(";");
-        state.inferredFnNames.pop();
         return;
       }
     }
@@ -1741,7 +1743,6 @@ var JSHINT = (function () {
       //  }
       var iscase = (funct["(verb)"] === "case" && state.tokens.curr.value === ":");
       block(true, true, false, false, iscase);
-      state.inferredFnNames.pop();
       return;
     }
 
@@ -1773,7 +1774,6 @@ var JSHINT = (function () {
 
     indent = i;
     scope = s;
-    state.inferredFnNames.pop();
     return r;
   }
 
@@ -2558,6 +2558,8 @@ var JSHINT = (function () {
     }
 
     if (state.tokens.next.id !== ")") {
+      // TODO: Figure out if this can be avoided
+      state.inferredFnNames.push([]);
       for (;;) {
         p[p.length] = expression(10);
         n += 1;
@@ -2566,6 +2568,7 @@ var JSHINT = (function () {
         }
         comma();
       }
+      state.inferredFnNames.pop();
     }
 
     advance(")");
@@ -2684,7 +2687,6 @@ var JSHINT = (function () {
 
   infix("[", function (left, that) {
     state.pushFnName(state.tokens.prev);
-    state.inferredFnNames.push([]);
     var e = expression(10), s;
     if (e && e.type === "(string)") {
       if (!state.option.evil && (e.value === "eval" || e.value === "execScript")) {
@@ -2700,7 +2702,6 @@ var JSHINT = (function () {
       }
     }
     advance("]", that);
-    state.inferredFnNames.pop();
 
     if (e && e.value === "hasOwnProperty" && state.tokens.next.value === "=") {
       warning("W001");
@@ -3004,6 +3005,8 @@ var JSHINT = (function () {
 
     if (!name) {
       inferredName = state.inferFnName();
+      //console.log(state.inferFnNames());
+      //console.dir(inferredName);
     }
 
     state.option = Object.create(state.option);
@@ -3141,6 +3144,8 @@ var JSHINT = (function () {
       var b, f, i, p, t, g;
       var props = {}; // All properties, including accessors
       var tag = "";
+
+      state.inferredFnNames.pop();
 
       function saveProperty(name, tkn) {
 
@@ -3561,8 +3566,6 @@ var JSHINT = (function () {
         } else {
           destructuringExpressionMatch(names, value);
         }
-
-        state.popFnName();
       }
 
       if (state.tokens.next.id !== ",") {

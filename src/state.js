@@ -34,7 +34,7 @@ var state = {
   },
 
   inferFnName: function() {
-    return this._inferFnName(this.inferredFnNames.length - 1);
+    return this._inferFnName(this.inferredFnNames.length - 2);
   },
   inferFnNames: function() {
     return this.inferredFnNames.map(function(_, idx) {
@@ -44,7 +44,7 @@ var state = {
 
   _inferFnName: function(idx) {
     var names = this.inferredFnNames[idx];
-    if (names.length === 0) {
+    if (!names || names.length === 0) {
       return "";
     }
 
