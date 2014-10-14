@@ -34,7 +34,16 @@ var state = {
   },
 
   inferFnName: function() {
-    var names = this.inferredFnNames[this.inferredFnNames.length - 1];
+    return this._inferFnName(this.inferredFnNames.length - 1);
+  },
+  inferFnNames: function() {
+    return this.inferredFnNames.map(function(_, idx) {
+      return this._inferFnName(idx);
+    }, this);
+  },
+
+  _inferFnName: function(idx) {
+    var names = this.inferredFnNames[idx];
     if (names.length === 0) {
       return "";
     }
