@@ -55,3 +55,11 @@ g.viaDot = function() {};
 
 g["viaBracket"] = function() {};
 g["expr" + g + "ession"] = function() {};
+
+var VarDeclClass = class {
+  constructor() {}                 // "VarDeclClass"
+  static func() {}                 // "func"
+  method() {}                      // "method"
+  get getter() {}                  // "get getter"
+  set setter() {}                  // "set setter"
+};

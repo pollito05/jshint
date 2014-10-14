@@ -176,5 +176,40 @@
     "character": 37,
     "last": 57,
     "lastcharacter": 41
+  },
+  {
+    "name": "VarDeclClass",
+    "line": 60,
+    "character": 15,
+    "last": 60,
+    "lastcharacter": 19
+  },
+  {
+    "name": "func",
+    "line": 61,
+    "character": 15,
+    "last": 61,
+    "lastcharacter": 19
+  },
+  {
+    "name": "method",
+    "line": 62,
+    "character": 10,
+    "last": 62,
+    "lastcharacter": 14
+  },
+  {
+    "name": "get getter",
+    "line": 63,
+    "character": 14,
+    "last": 63,
+    "lastcharacter": 18
+  },
+  {
+    "name": "set setter",
+    "line": 64,
+    "character": 14,
+    "last": 64,
+    "lastcharacter": 18
   }
 ]

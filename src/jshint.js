@@ -3117,10 +3117,11 @@ var JSHINT = (function () {
 
 
   (function (x) {
-    x.nud = function (isclassdef) {
+    x.nud = function (className) {
       var b, f, i, p, t, g;
       var props = {}; // All properties, including accessors
       var tag = "";
+      var isclassdef = typeof className === "string";
 
       function saveProperty(name, tkn) {
 
@@ -3294,6 +3295,10 @@ var JSHINT = (function () {
             } else {
               state.inferredFnNames.set(state.tokens.next);
               i = propertyName();
+
+              if (isclassdef && i === "constructor") {
+                i = className;
+              }
 
               saveProperty(tag + i, state.tokens.next);
 
@@ -3658,6 +3663,8 @@ var JSHINT = (function () {
     } else if (state.tokens.next.identifier && state.tokens.next.value !== "extends") {
       // BindingIdentifier(opt)
       this.name = identifier();
+    } else {
+      this.name = state.inferredFnNames.infer();
     }
     classtail(this);
     return this;
@@ -3676,7 +3683,7 @@ var JSHINT = (function () {
     state.directive["use strict"] = true;
     advance("{");
     // ClassBody(opt)
-    c.body = state.syntax["{"].nud(true);
+    c.body = state.syntax["{"].nud(c.name);
     state.directive["use strict"] = strictness;
   }
 
