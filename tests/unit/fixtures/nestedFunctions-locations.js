@@ -94,7 +94,7 @@
     "lastcharacter": 36
   },
   {
-    "name": "[expression]",
+    "name": "(expression)",
     "line": 38,
     "character": 33,
     "last": 38,
@@ -150,7 +150,7 @@
     "lastcharacter": 38
   },
   {
-    "name": "[expression]",
+    "name": "(expression)",
     "line": 52,
     "character": 69,
     "last": 52,
@@ -171,7 +171,7 @@
     "lastcharacter": 32
   },
   {
-    "name": "[expression]",
+    "name": "(expression)",
     "line": 57,
     "character": 37,
     "last": 57,

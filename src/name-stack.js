@@ -60,7 +60,7 @@ NameStack.prototype.infer = function(offset) {
   type = nameToken.type;
 
   if (type !== "(string)" && type !== "(number)" && type !== "(identifier)") {
-    return "[expression]";
+    return "(expression)";
   }
 
   if (nameToken.setterName) {
