@@ -3166,11 +3166,7 @@ var JSHINT = (function () {
           // We don't want to save this getter unless it's an actual getter
           // and not an ES6 concise method
           if (i) {
-            if (nextVal === "get") {
-              saveGetter(props, i);
-            } else {
-              saveSetter(props, i, state.tokens.next);
-            }
+            saveAccessor(nextVal, props, i, state.tokens.next);
           }
 
           t = state.tokens.next;
@@ -3246,8 +3242,8 @@ var JSHINT = (function () {
       // Check for lonely setters if in the ES5 mode.
       if (state.option.inES5()) {
         for (var name in props) {
-          if (_.has(props, name) && props[name].setter && !props[name].getter) {
-            warning("W078", props[name].setterToken);
+          if (_.has(props, name) && props[name].hasSetter && !props[name].hasGetter) {
+            warning("W078", props[name].accessorToken);
           }
         }
       }
@@ -3643,11 +3639,9 @@ var JSHINT = (function () {
       if (!computed) {
         // We don't know how to determine if we have duplicate computed property names :(
         if (getset) {
-          if (getset.value === "get") {
-            saveGetter(isStatic ? staticProps : props, name.value, true, isStatic);
-          } else {
-            saveSetter(isStatic ? staticProps : props, name.value, name, true, isStatic);
-          }
+          saveAccessor(
+            getset.value, isStatic ? staticProps : props, name.value, name, true, isStatic
+          );
         } else {
           saveProperty(isStatic ? staticProps : props, name.value, name, true, isStatic);
         }
@@ -4533,34 +4527,38 @@ var JSHINT = (function () {
     props[name].basictkn = tkn;
   }
 
-  function saveSetter(props, name, tkn, isClass, isStatic) {
-    var msg = ["key", "setter method", "static setter method"];
-    msg = msg[(isClass || false) + (isStatic || false)];
+  /**
+   * @param {string} accessorType - Either "get" or "set"
+   * @param {object} props - a collection of all properties of the object to
+   *                         which the current accessor is being assigned
+   * @param {object} tkn - the identifier token representing the accessor name
+   * @param {boolean} isClass - whether the accessor is part of an ES6 Class
+   *                            definition
+   * @param {boolean} isStatic - whether the accessor is a static method
+   */
+  function saveAccessor(accessorType, props, name, tkn, isClass, isStatic) {
+    var flagName = accessorType === "get" ? "hasGetter" : "hasSetter";
+    var msg = "";
+
+    if (isClass) {
+      if (isStatic) {
+        msg += "static ";
+      }
+      msg += accessorType + "ter method";
+    } else {
+      msg = "key";
+    }
+
     if (props[name] && _.has(props, name)) {
-      if (props[name].basic || props[name].setter) {
+      if (props[name].basic || props[name][flagName]) {
         warning("W075", state.tokens.next, msg, name);
       }
     } else {
       props[name] = {};
     }
 
-    props[name].setter = true;
-    props[name].setterToken = tkn;
-  }
-
-  function saveGetter(props, name, isClass, isStatic) {
-    var msg = ["key", "getter method", "static getter method"];
-    msg = msg[(isClass || false) + (isStatic || false)];
-    if (props[name] && _.has(props, name)) {
-      if (props[name].basic || props[name].getter) {
-        warning("W075", state.tokens.next, msg, name);
-      }
-    } else {
-      props[name] = {};
-    }
-
-    props[name].getter = true;
-    props[name].getterToken = state.tokens.curr;
+    props[name].accessorToken = tkn;
+    props[name][flagName] = true;
   }
 
   function computedPropertyName() {
