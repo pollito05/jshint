@@ -3167,7 +3167,7 @@ var JSHINT = (function () {
           // We don't want to save this getter unless it's an actual getter
           // and not an ES6 concise method
           if (i) {
-            saveAccessor(nextVal, props, i, state.tokens.next);
+            saveAccessor(nextVal, props, i, state.tokens.curr);
           }
 
           t = state.tokens.next;
@@ -4564,7 +4564,7 @@ var JSHINT = (function () {
     }
 
     state.tokens.curr.accessorType = accessorType;
-    state.nameStack.set(state.tokens.curr);
+    state.nameStack.set(tkn);
     // Because `doFunction` is most commonly called as part of a Function
     // expression, it has been written to ignore the topmost entry on the
     // name stack. This form of function declaration does not require an
