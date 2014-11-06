@@ -2813,6 +2813,9 @@ var JSHINT = (function () {
           advance();
         }
       }
+    } else if (typeof id === "object") {
+      if (id.id === "(string)" || id.id === "(identifier)") id = id.value;
+      else if (id.id === "(number)") id = id.value.toString();
     }
 
     if (id === "hasOwnProperty") {
@@ -3581,6 +3584,8 @@ var JSHINT = (function () {
     var props = {};
     var staticProps = {};
     var computed;
+    var oldValidThis = state.option.validthis;
+    state.option.validthis = true;
     for (var i = 0; state.tokens.next.id !== "}"; ++i) {
       name = state.tokens.next;
       isStatic = false;
@@ -3650,8 +3655,9 @@ var JSHINT = (function () {
         error("E049", name, "class method", "prototype");
       }
 
-      doFunction(name, c, false, null);
+      doFunction(!computed && propertyName(name), c, false, null);
     }
+    state.option.validthis = oldValidThis;
   }
 
   blockstmt("function", function () {

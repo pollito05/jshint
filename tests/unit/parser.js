@@ -4186,6 +4186,26 @@ exports["class and method naming"] = function (test) {
   test.done();
 };
 
+exports["class method this"] = function (test) {
+  var code = [
+  "class C {",
+  "  constructor(x) {",
+  "    this._x = x;",
+  "  }",
+  "  x() { return this._x; }",
+  "  static makeC(x) { return new this(x); }",
+  "  0() { return this._x + 0; }",
+  "  ['foo']() { return this._x + 6; }",
+  "  'test'() { return this._x + 'test'; }",
+  "}"
+  ];
+
+  TestRun(test)
+    .test(code, {esnext: true});
+
+  test.done();
+};
+
 exports["test for GH-1018"] = function (test) {
   var code = [
     "if (a = 42) {}",
