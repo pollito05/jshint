@@ -4197,10 +4197,12 @@ exports["class method this"] = function (test) {
   "  0() { return this._x + 0; }",
   "  ['foo']() { return this._x + 6; }",
   "  'test'() { return this._x + 'test'; }",
+  "  bar() { function notCtor() { return this; } notCtor(); }",
   "}"
   ];
 
   TestRun(test)
+    .addError(10, "Possible strict violation.")
     .test(code, {esnext: true});
 
   test.done();

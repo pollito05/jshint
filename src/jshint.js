@@ -2203,7 +2203,8 @@ var JSHINT = (function () {
   reservevar("Infinity");
   reservevar("null");
   reservevar("this", function (x) {
-    if (state.directive["use strict"] && !state.option.validthis && ((funct["(statement)"] &&
+    if (state.directive["use strict"] && !state.option.validthis &&
+        ((funct["(statement)"] && funct["(statement)"].type !== "class" &&
         funct["(name)"].charAt(0) > "Z") || funct["(global)"])) {
       warning("W040", x);
     }
@@ -3584,8 +3585,6 @@ var JSHINT = (function () {
     var props = {};
     var staticProps = {};
     var computed;
-    var oldValidThis = state.option.validthis;
-    state.option.validthis = true;
     for (var i = 0; state.tokens.next.id !== "}"; ++i) {
       name = state.tokens.next;
       isStatic = false;
@@ -3657,7 +3656,6 @@ var JSHINT = (function () {
 
       doFunction(!computed && propertyName(name), c, false, null);
     }
-    state.option.validthis = oldValidThis;
   }
 
   blockstmt("function", function () {
