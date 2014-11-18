@@ -3728,6 +3728,13 @@ exports["fat arrow nested function scoping"] = function (test) {
   test.done();
 };
 
+exports["default arguments in fat arrow functions"] = function (test) {
+  TestRun(test)
+    .test("(x = 0) => { return x; };", { expr: true, unused: true, esnext: true });
+
+  test.done();
+};
+
 exports["concise methods support"] = function (test) {
   var code = [
     "var foobar = {",
