@@ -3693,6 +3693,7 @@ var JSHINT = (function () {
         error("E049", name, "class method", "prototype");
       }
 
+      advance("(");
       doFunction(!computed && propertyName(name), c, false, null);
     }
 
