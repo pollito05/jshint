@@ -1337,7 +1337,7 @@ var JSHINT = (function () {
       nobreaknonadjacent(state.tokens.prev, state.tokens.curr);
 
       this.left = left;
-      this.right = doFunction(undefined, undefined, false, left);
+      this.right = doFunction(undefined, undefined, false, { loneArg: left });
       return this;
     };
     return x;
@@ -2638,7 +2638,7 @@ var JSHINT = (function () {
         warning("W119", state.tokens.curr, "arrow function syntax (=>)");
       }
 
-      return doFunction(null);
+      return doFunction(null, null, null, { parsedParen: true });
     }
 
     var exprs = [];
@@ -2863,40 +2863,25 @@ var JSHINT = (function () {
     return id;
   }
 
-  function functionparams(parsed) {
-    var curr, next;
+  function functionparams(fatarrow) {
+    var next;
     var params = [];
     var ident;
     var tokens = [];
     var t;
     var pastDefault = false;
+    var loneArg = fatarrow && fatarrow.loneArg;
 
-    if (parsed) {
-      if (Array.isArray(parsed)) {
-        for (var i in parsed) {
-          curr = parsed[i];
-          if (curr.value === "...") {
-            if (!state.option.esnext) {
-              warning("W119", curr, "spread/rest operator");
-            }
-            continue;
-          } else if (curr.value !== ",") {
-            params.push(curr.value);
-            addlabel(curr.value, { type: "unused", token: curr });
-          }
-        }
-        return params;
-      } else {
-        if (parsed.identifier === true) {
-          addlabel(parsed.value, { type: "unused", token: parsed });
-          return [parsed];
-        }
-      }
+    if (loneArg && loneArg.identifier === true) {
+      addlabel(loneArg.value, { type: "unused", token: loneArg });
+      return [loneArg];
     }
 
     next = state.tokens.next;
 
-    //advance("(");
+    if (!fatarrow || !fatarrow.parsedParen) {
+      advance("(");
+    }
 
     if (state.tokens.next.id === ")") {
       advance(")");
@@ -3022,7 +3007,18 @@ var JSHINT = (function () {
     };
   }
 
-  function doFunction(name, statement, generator, fatarrowparam) {
+  /**
+   * @param {Object} [fatarrow] In the case that the function being parsed
+   *                            takes the "fat arrow" form, this object will
+   *                            contain details about the in-progress parsing
+   *                            operation.
+   * @param {Token} [fatarrow.loneArg] The argument to the function in cases
+   *                                   where it was defined using the single-
+   *                                   argument shorthand.
+   * @param {bool} [fatarrow.parsedParen] Whether the opening parenthesis has
+   *                                      already been parsed.
+   */
+  function doFunction(name, statement, generator, fatarrow) {
     var f;
     var oldOption = state.option;
     var oldIgnored = state.ignored;
@@ -3032,7 +3028,7 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || state.nameStack.infer(), state.tokens.curr, scope, {
+    funct = functor(name || state.nameStack.infer(), state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -3047,20 +3043,14 @@ var JSHINT = (function () {
       addlabel(name, { type: "function" });
     }
 
-    if (fatarrowparam && fatarrowparam.identifier === true) {
-      addlabel(fatarrowparam.value, { type: "unused", token: fatarrowparam });
-      funct["(params)"] = [fatarrowparam];
-    } else {
-      funct["(params)"] = functionparams();
-    }
+    funct["(params)"] = functionparams(fatarrow);
     funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"]);
 
-    var isFatArrow = state.tokens.next.id === "=>" || fatarrowparam;
-    if (state.tokens.next.id === "=>") {
+    if (fatarrow && !fatarrow.loneArg) {
       advance("=>");
     }
 
-    block(false, true, true, isFatArrow);
+    block(false, true, true, !!fatarrow);
 
     if (!state.option.noyield && generator &&
         funct["(generator)"] !== "yielded") {
@@ -3215,7 +3205,6 @@ var JSHINT = (function () {
             saveAccessor(nextVal, props, i, state.tokens.curr);
           }
 
-          advance("(");
           t = state.tokens.next;
           f = doFunction();
           p = f["(params)"];
@@ -3262,7 +3251,6 @@ var JSHINT = (function () {
               if (!state.option.inESNext()) {
                 warning("W104", state.tokens.curr, "concise methods");
               }
-              advance("(");
               doFunction(i, undefined, g);
             } else {
               advance(":");
@@ -3707,7 +3695,6 @@ var JSHINT = (function () {
 
       propertyName(name);
 
-      advance("(");
       doFunction(null, c, false, null);
     }
 
@@ -3739,7 +3726,6 @@ var JSHINT = (function () {
     }
     addlabel(i, { type: "unction", token: state.tokens.curr });
 
-    advance("(");
     doFunction(i, { statement: true }, generator);
     if (state.tokens.next.id === "(" && state.tokens.next.line === state.tokens.curr.line) {
       error("E039");
@@ -3759,7 +3745,6 @@ var JSHINT = (function () {
     }
 
     var i = optionalidentifier();
-    advance("(");
     var fn = doFunction(i, undefined, generator);
 
     function isVariable(name) { return name[0] !== "("; }
