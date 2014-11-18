@@ -2586,9 +2586,9 @@ var JSHINT = (function () {
       }
       if (!left.identifier && left.id !== "." && left.id !== "[" &&
           left.id !== "(" && left.id !== "&&" && left.id !== "||" &&
-          left.id !== "?" && !left["(name)"]) { //TODO: Implement a better
+          left.id !== "?" && !(state.option.esnext && left["(name)"])) { //TODO: Implement a better
                                                 // check for functions
-        warning("W067", left);
+        warning("W067", that);
       }
     }
 
