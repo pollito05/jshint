@@ -2086,9 +2086,7 @@ var JSHINT = (function () {
         case "function":
         case "var":
         case "unused":
-          if (!state.parsingFatArrowParams) {
-            warning("W038", state.tokens.curr, v);
-          }
+          warning("W038", state.tokens.curr, v);
           break;
         case "label":
           warning("W037", state.tokens.curr, v);
@@ -2588,7 +2586,8 @@ var JSHINT = (function () {
       }
       if (!left.identifier && left.id !== "." && left.id !== "[" &&
           left.id !== "(" && left.id !== "&&" && left.id !== "||" &&
-          left.id !== "?" && !(state.option.esnext && left.id === "=>")) {
+          left.id !== "?" && !left["(name)"]) { //TODO: Implement a better
+                                                // check for functions
         warning("W067", left);
       }
     }
@@ -2614,10 +2613,19 @@ var JSHINT = (function () {
       pn1 = pn;
       pn = peek(i);
     } while (!(parens === 0 && pn1.value === ")") &&
-             pn.value !== "=>" && pn.value !== ";" && pn.type !== "(end)");
+             /*pn.value !== "=>" &&*/ pn.value !== ";" && pn.type !== "(end)");
 
     if (state.tokens.next.id === "function") {
       triggerFnExpr = state.tokens.next.immed = true;
+    }
+
+    // This token starts the parameter list of a "fat arrow" function
+    if (pn.value === "=>") {
+      if (!state.option.esnext) {
+        warning("W119", state.tokens.curr, "arrow function syntax (=>)");
+      }
+
+      return doFunction(null);
     }
 
     var exprs = [];
@@ -2632,9 +2640,7 @@ var JSHINT = (function () {
             exprs.push(bracket.left[t].token);
           }
         } else {
-          state.parsingFatArrowParams = pn1.value === "=>";
           exprs.push(expression(10));
-          state.parsingFatArrowParams = false;
         }
         if (state.tokens.next.id !== ",") {
           break;
@@ -2877,7 +2883,7 @@ var JSHINT = (function () {
 
     next = state.tokens.next;
 
-    advance("(");
+    //advance("(");
 
     if (state.tokens.next.id === ")") {
       advance(")");
@@ -3003,7 +3009,7 @@ var JSHINT = (function () {
     };
   }
 
-  function doFunction(name, statement, generator, fatarrowparams) {
+  function doFunction(name, statement, generator/*, fatarrowparams*/) {
     var f;
     var oldOption = state.option;
     var oldIgnored = state.ignored;
@@ -3028,19 +3034,16 @@ var JSHINT = (function () {
       addlabel(name, { type: "function" });
     }
 
-    funct["(params)"] = functionparams(fatarrowparams);
+    funct["(params)"] = functionparams();//fatarrowparams);
     funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"]);
 
-    // So we parse fat-arrow functions after we encounter =>. So basically
-    // doFunction is called with the left side of => as its last argument.
-    // This means that the parser, at that point, had already added its
-    // arguments to the undefs array and here we undo that.
+    var isFatArrow = false;
+    if (state.tokens.next.id === "=>") {
+      isFatArrow = true;
+      advance("=>");
+    }
 
-    JSHINT.undefs = _.filter(JSHINT.undefs, function (item) {
-      return !_.contains(_.union(fatarrowparams), item[2]);
-    });
-
-    block(false, true, true, fatarrowparams ? true : false);
+    block(false, true, true, isFatArrow);
 
     if (!state.option.noyield && generator &&
         funct["(generator)"] !== "yielded") {
@@ -3195,6 +3198,7 @@ var JSHINT = (function () {
             saveAccessor(nextVal, props, i, state.tokens.curr);
           }
 
+          advance("(");
           t = state.tokens.next;
           f = doFunction();
           p = f["(params)"];
@@ -3241,6 +3245,7 @@ var JSHINT = (function () {
               if (!state.option.inESNext()) {
                 warning("W104", state.tokens.curr, "concise methods");
               }
+              advance("(");
               doFunction(i, undefined, g);
             } else {
               advance(":");
@@ -3685,6 +3690,7 @@ var JSHINT = (function () {
 
       propertyName(name);
 
+      advance("(");
       doFunction(null, c, false, null);
     }
 
@@ -3716,6 +3722,7 @@ var JSHINT = (function () {
     }
     addlabel(i, { type: "unction", token: state.tokens.curr });
 
+    advance("(");
     doFunction(i, { statement: true }, generator);
     if (state.tokens.next.id === "(" && state.tokens.next.line === state.tokens.curr.line) {
       error("E039");
@@ -3735,6 +3742,7 @@ var JSHINT = (function () {
     }
 
     var i = optionalidentifier();
+    advance("(");
     var fn = doFunction(i, undefined, generator);
 
     function isVariable(name) { return name[0] !== "("; }
