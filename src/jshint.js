@@ -1330,10 +1330,6 @@ var JSHINT = (function () {
     var x = symbol(s, 42);
 
     x.led = function (left) {
-      if (!state.option.esnext) {
-        warning("W119", state.tokens.curr, "arrow function syntax (=>)");
-      }
-
       nobreaknonadjacent(state.tokens.prev, state.tokens.curr);
 
       this.left = left;
@@ -2634,10 +2630,6 @@ var JSHINT = (function () {
     // current token marks the beginning of a "fat arrow" function and parsing
     // should proceed accordingly.
     if (pn.value === "=>") {
-      if (!state.option.esnext) {
-        warning("W119", state.tokens.curr, "arrow function syntax (=>)");
-      }
-
       return doFunction(null, null, null, { parsedParen: true });
     }
 
@@ -3046,8 +3038,14 @@ var JSHINT = (function () {
     funct["(params)"] = functionparams(fatarrow);
     funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"]);
 
-    if (fatarrow && !fatarrow.loneArg) {
-      advance("=>");
+    if (fatarrow) {
+      if (!state.option.esnext) {
+        warning("W119", state.tokens.curr, "arrow function syntax (=>)");
+      }
+
+      if (!fatarrow.loneArg) {
+        advance("=>");
+      }
     }
 
     block(false, true, true, !!fatarrow);
