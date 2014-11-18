@@ -3031,7 +3031,7 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || state.nameStack.infer(), state.tokens.next, scope, {
+    funct = functor(name || state.nameStack.infer(), state.tokens.curr, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
