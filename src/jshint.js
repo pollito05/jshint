@@ -2040,6 +2040,18 @@ var JSHINT = (function () {
       var block;
       var prevIdentifier;
 
+      // If this identifier is the lone parameter to a shorthand "fat arrow"
+      // function definition, i.e.
+      //
+      //     x => x;
+      //
+      // ...it should not be considered as a variable in the current scope. It
+      // will be added to the scope of the new function when the next token is
+      // parsed, so it can be safely ignored for now.
+      if (state.tokens.next.id === "=>") {
+        return this;
+      }
+
       if (typeof s === "function") {
         // Protection against accidental inheritance.
         s = undefined;
