@@ -1337,7 +1337,7 @@ var JSHINT = (function () {
       nobreaknonadjacent(state.tokens.prev, state.tokens.curr);
 
       this.left = left;
-      this.right = doFunction(undefined, undefined, false, left);
+      this.right = doFunction(undefined, undefined, false, { args: left });
       return this;
     };
     return x;
@@ -2637,7 +2637,7 @@ var JSHINT = (function () {
         warning("W119", state.tokens.curr, "arrow function syntax (=>)");
       }
 
-      return doFunction(null);
+      return doFunction(null, null, null, { parsedParen: true });
     }
 
     var exprs = [];
@@ -2862,13 +2862,14 @@ var JSHINT = (function () {
     return id;
   }
 
-  function functionparams(parsed) {
+  function functionparams(fatarrow) {
     var curr, next;
     var params = [];
     var ident;
     var tokens = [];
     var t;
     var pastDefault = false;
+    var parsed = fatarrow && fatarrow.args;
 
     if (parsed) {
       if (Array.isArray(parsed)) {
@@ -2895,7 +2896,9 @@ var JSHINT = (function () {
 
     next = state.tokens.next;
 
-    //advance("(");
+    if (!fatarrow || !fatarrow.parsedParen) {
+      advance("(");
+    }
 
     if (state.tokens.next.id === ")") {
       advance(")");
@@ -3021,7 +3024,14 @@ var JSHINT = (function () {
     };
   }
 
-  function doFunction(name, statement, generator, fatarrowparam) {
+  /**
+   *
+   * @param {Object} [fatarrow]
+   * @param {Token} [fatarrow.args] Expression(s) that have already been parsed
+   *                                as arguments (generally as a result of
+   * @param {bool} [fatarrow.parsedParen]
+   */
+  function doFunction(name, statement, generator, fatarrow) {
     var f;
     var oldOption = state.option;
     var oldIgnored = state.ignored;
@@ -3031,7 +3041,7 @@ var JSHINT = (function () {
     state.ignored = Object.create(state.ignored);
     scope = Object.create(scope);
 
-    funct = functor(name || state.nameStack.infer(), state.tokens.curr, scope, {
+    funct = functor(name || state.nameStack.infer(), state.tokens.next, scope, {
       "(statement)": statement,
       "(context)":   funct,
       "(generator)": generator ? true : null
@@ -3046,20 +3056,14 @@ var JSHINT = (function () {
       addlabel(name, { type: "function" });
     }
 
-    if (fatarrowparam && fatarrowparam.identifier === true) {
-      addlabel(fatarrowparam.value, { type: "unused", token: fatarrowparam });
-      funct["(params)"] = [fatarrowparam];
-    } else {
-      funct["(params)"] = functionparams();
-    }
+    funct["(params)"] = functionparams(fatarrow);
     funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"]);
 
-    var isFatArrow = state.tokens.next.id === "=>" || fatarrowparam;
-    if (state.tokens.next.id === "=>") {
+    if (fatarrow && !fatarrow.args) {
       advance("=>");
     }
 
-    block(false, true, true, isFatArrow);
+    block(false, true, true, !!fatarrow);
 
     if (!state.option.noyield && generator &&
         funct["(generator)"] !== "yielded") {
@@ -3214,7 +3218,6 @@ var JSHINT = (function () {
             saveAccessor(nextVal, props, i, state.tokens.curr);
           }
 
-          advance("(");
           t = state.tokens.next;
           f = doFunction();
           p = f["(params)"];
@@ -3261,7 +3264,6 @@ var JSHINT = (function () {
               if (!state.option.inESNext()) {
                 warning("W104", state.tokens.curr, "concise methods");
               }
-              advance("(");
               doFunction(i, undefined, g);
             } else {
               advance(":");
@@ -3706,7 +3708,6 @@ var JSHINT = (function () {
 
       propertyName(name);
 
-      advance("(");
       doFunction(null, c, false, null);
     }
 
@@ -3738,7 +3739,6 @@ var JSHINT = (function () {
     }
     addlabel(i, { type: "unction", token: state.tokens.curr });
 
-    advance("(");
     doFunction(i, { statement: true }, generator);
     if (state.tokens.next.id === "(" && state.tokens.next.line === state.tokens.curr.line) {
       error("E039");
@@ -3758,7 +3758,6 @@ var JSHINT = (function () {
     }
 
     var i = optionalidentifier();
-    advance("(");
     var fn = doFunction(i, undefined, generator);
 
     function isVariable(name) { return name[0] !== "("; }
