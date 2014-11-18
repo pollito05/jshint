@@ -3002,7 +3002,7 @@ var JSHINT = (function () {
     };
   }
 
-  function doFunction(name, statement, generator/*, fatarrowparams*/) {
+  function doFunction(name, statement, generator, fatarrowparam) {
     var f;
     var oldOption = state.option;
     var oldIgnored = state.ignored;
@@ -3027,12 +3027,15 @@ var JSHINT = (function () {
       addlabel(name, { type: "function" });
     }
 
-    funct["(params)"] = functionparams();//fatarrowparams);
+    if (fatarrowparam) {
+      funct["(params)"] = [fatarrowparam];
+    } else {
+      funct["(params)"] = functionparams();
+    }
     funct["(metrics)"].verifyMaxParametersPerFunction(funct["(params)"]);
 
-    var isFatArrow = false;
+    var isFatArrow = state.tokens.next.id === "=>" || fatarrowparam;
     if (state.tokens.next.id === "=>") {
-      isFatArrow = true;
       advance("=>");
     }
 
