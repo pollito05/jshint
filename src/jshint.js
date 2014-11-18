@@ -3034,7 +3034,8 @@ var JSHINT = (function () {
       addlabel(name, { type: "function" });
     }
 
-    if (fatarrowparam) {
+    if (fatarrowparam && fatarrowparam.identifier === true) {
+      addlabel(fatarrowparam.value, { type: "unused", token: fatarrowparam });
       funct["(params)"] = [fatarrowparam];
     } else {
       funct["(params)"] = functionparams();
