@@ -323,6 +323,11 @@ var JSHINT = (function () {
     return true;
   }
 
+  function acceptsUnresolvable(token) {
+    return token && token.identifier && !token.isProperty &&
+      (token.id === "delete" || token.id === "typeof");
+  }
+
   function supplant(str, data) {
     return str.replace(/\{([^{}]*)\}/g, function (a, b) {
       var r = data[b];
@@ -2038,7 +2043,6 @@ var JSHINT = (function () {
       var s = scope[v];
       var f;
       var block;
-      var prevIdentifier;
 
       if (typeof s === "function") {
         // Protection against accidental inheritance.
@@ -2109,8 +2113,7 @@ var JSHINT = (function () {
             // display warning if we're inside of typeof or delete.
             // Attempting to subscript a null reference will throw an
             // error, even within the typeof and delete operators
-            prevIdentifier = state.prevIdentifier && state.prevIdentifier.value;
-            if (!(prevIdentifier === "typeof" || prevIdentifier === "delete") ||
+            if (!acceptsUnresolvable(state.prevIdentifier) ||
               (state.tokens.next &&
                 (state.tokens.next.value === "." || state.tokens.next.value === "["))) {
 

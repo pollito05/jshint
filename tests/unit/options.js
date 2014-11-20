@@ -542,6 +542,19 @@ exports.undef = function (test) {
   test.done();
 };
 
+exports.undefToOpMethods = function (test) {
+  TestRun(test)
+    .addError(2, "'undef' is not defined.")
+    .addError(3, "'undef' is not defined.")
+    .test([
+      "var obj;",
+      "obj.delete(undef);",
+      "obj.typeof(undef);"
+    ], { undef: true });
+
+  test.done();
+};
+
 exports.unused = function (test) {
   var src = fs.readFileSync(__dirname + '/fixtures/unused.js', 'utf8');
 
