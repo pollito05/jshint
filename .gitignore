@@ -10,3 +10,4 @@ demo.js
 .idea
 
 coverage/
+tests/browser-unit-tests.js
