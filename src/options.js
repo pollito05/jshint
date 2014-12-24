@@ -213,6 +213,29 @@ exports.bool = {
     nonew       : true,
 
     /**
+     * This option prohibits the use of unary increment and decrement
+     * operators.  Some people think that `++` and `--` reduces the quality of
+     * their coding styles and there are programming languages—such as
+     * Python—that go completely without these operators.
+     */
+    plusplus    : true,
+
+    /**
+     * This option requires all functions to run in ECMAScript 5's strict mode.
+     * [Strict mode](https://developer.mozilla.org/en/JavaScript/Strict_mode)
+     * is a way to opt in to a restricted variant of JavaScript. Strict mode
+     * eliminates some JavaScript pitfalls that didn't cause errors by changing
+     * them to produce errors.  It also fixes mistakes that made it difficult
+     * for the JavaScript engines to perform certain optimizations.
+     *
+     * *Note:* This option enables strict mode for function scope only. It
+     * *prohibits* the global scoped strict mode because it might break
+     * third-party widgets on your page. If you really want to use global
+     * strict mode, see the *globalstrict* option.
+     */
+    strict      : true,
+
+    /**
      * This option prohibits the use of explicitly undeclared variables. This
      * option is very useful for spotting leaking and mistyped variables.
      *
@@ -324,14 +347,6 @@ exports.bool = {
     evil        : true,
 
     /**
-     * This option prohibits the use of unary increment and decrement
-     * operators.  Some people think that `++` and `--` reduces the quality of
-     * their coding styles and there are programming languages—such as
-     * Python—that go completely without these operators.
-     */
-    plusplus    : true,
-
-    /**
      * This option suppresses warnings about the `__proto__` property.
      */
     proto       : true,
@@ -341,21 +356,6 @@ exports.bool = {
      * URLs—such as `javascript:...`.
      */
     scripturl   : true,
-
-    /**
-     * This option requires all functions to run in ECMAScript 5's strict mode.
-     * [Strict mode](https://developer.mozilla.org/en/JavaScript/Strict_mode)
-     * is a way to opt in to a restricted variant of JavaScript. Strict mode
-     * eliminates some JavaScript pitfalls that didn't cause errors by changing
-     * them to produce errors.  It also fixes mistakes that made it difficult
-     * for the JavaScript engines to perform certain optimizations.
-     *
-     * *Note:* This option enables strict mode for function scope only. It
-     * *prohibits* the global scoped strict mode because it might break
-     * third-party widgets on your page. If you really want to use global
-     * strict mode, see the *globalstrict* option.
-     */
-    strict      : true,
 
     /**
      * This option suppresses warnings about using `[]` notation when it can be
