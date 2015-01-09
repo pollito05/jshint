@@ -831,9 +831,12 @@ var JSHINT = (function () {
     return false;
   }
 
-  // TODO: This duplicates logic and is most likely incorrect. Fix it and add
-  // tests.
-  function isBeginOfExpr(prev) {
+  function isBeginOfExpr(prev, curr) {
+    return !prev.left && prev.arity !== "unary";
+  }
+
+  // TODO: Figure out what this represents exactly, then name is appropriately.
+  function somethingElse(prev) {
     if (prev.id === "(begin)" || prev.id === ";" || prev.id === "}") {
       return true;
     }
@@ -1088,8 +1091,8 @@ var JSHINT = (function () {
     reserveName(x);
 
     x.nud = (typeof f === "function") ? f : function () {
-      this.right = expression(150);
       this.arity = "unary";
+      this.right = expression(150);
 
       if (this.id === "++" || this.id === "--") {
         if (state.option.plusplus) {
@@ -2202,8 +2205,8 @@ var JSHINT = (function () {
   prefix("+", "num");
   prefix("+++", function () {
     warning("W007");
-    this.right = expression(150);
     this.arity = "unary";
+    this.right = expression(150);
     return this;
   });
   infix("+++", function (left) {
@@ -2216,8 +2219,8 @@ var JSHINT = (function () {
   prefix("-", "neg");
   prefix("---", function () {
     warning("W006");
-    this.right = expression(150);
     this.arity = "unary";
+    this.right = expression(150);
     return this;
   });
   infix("---", function (left) {
@@ -2256,6 +2259,7 @@ var JSHINT = (function () {
     if (state.option.bitwise) {
       warning("W052", this, "~");
     }
+    this.arity = "unary";
     expression(150);
     return this;
   });
@@ -2272,8 +2276,8 @@ var JSHINT = (function () {
   });
 
   prefix("!", function () {
-    this.right = expression(150);
     this.arity = "unary";
+    this.right = expression(150);
 
     if (!this.right) { // '!' followed by nothing? Give up.
       quit("E041", this.line || 0);
@@ -2529,26 +2533,27 @@ var JSHINT = (function () {
       ret = exprs[0];
 
       var isBeginning = isBeginOfExpr(preceeding, opening);
+      var sE = somethingElse(preceeding);
       var isEnd = isEndOfExpr();
       // Warn when a grouping operator only has a single expression, except:
       if (state.option.singleGroups) {
+        if (sE) {
+          if (!triggerFnExpr && !ret.id === "{")
+            warning("W126");
+        } else {
         if (!ret.left &&
-          !(ret.id === "{" && isBeginning) &&
-          // When used to designate a function expression for immediate invocation
-          !(triggerFnExpr && isBeginning) &&
           // As the return value of a single-statement arrow function
           !(ret.id === "{" && preceeding.id === "=>")) {
           warning("W126");
         } else if(ret.left &&
           // The binding power of the previous operator is lower than that of the
           // grouped expression
-          !((!isInfix(preceeding) || preceeding.left) && ret.lbp < preceeding.lbp) &&
-          !(!isEnd && ret.lbp < state.tokens.next.lbp) &&
-          !(isBeginning && triggerFnExpr) &&
+          !(!isBeginning && ret.lbp < preceeding.lbp) &&
+          !(!isEnd && ret.lbp < state.tokens.next.lbp)) {
           // When used to signal an object literal as the first token in the
           // expression
-          !(ret.id === "{" && isBeginning)) {
           warning("W126");
+        }
         }
       }
     }
