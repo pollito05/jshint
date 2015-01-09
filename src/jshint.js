@@ -833,7 +833,7 @@ var JSHINT = (function () {
 
   // TODO: This duplicates logic and is most likely incorrect. Fix it and add
   // tests.
-  function isBeginOfExpr(prev, curr) {
+  function isBeginOfExpr(prev) {
     if (prev.id === "(begin)" || prev.id === ";" || prev.id === "}") {
       return true;
     }
@@ -946,13 +946,6 @@ var JSHINT = (function () {
     }
     if (isLetExpr) {
       funct["(blockscope)"].unstack();
-    }
-
-    if (state.option.singleGroups && left && left.paren) {
-      //console.log('after paren: ', left.value, left.lbp);
-      if (!left.exprs && rbp <= left.lbp && !checkPunctuators(left, ["+"])) {
-        //warning("W126");
-      }
     }
 
     state.nameStack.pop();
@@ -2535,44 +2528,29 @@ var JSHINT = (function () {
     } else {
       ret = exprs[0];
 
-      if (false && ret.line === 61) {
-        console.log("preceeding:", preceeding.id, preceeding.lbp);
-        console.log("opening:", opening.id, opening.lbp);
-        console.log("ret:\t", ret.value, ret.lbp);
-        console.log("next:\t", state.tokens.next.value, state.tokens.next.lbp);
-        // TODO: I *think* there is a bug in `isExprBoundary` (originally
-        // implemented as `isEndOfExpr`). If so, fix it, store the result, and
-        // reference it in two checks below:
-        //
-        // 1. before comparing binding powers below (instead of using `isInfix`
-        //    directly)
-        // 2. when checking for object literals
-        //console.log(isExprBoundary(preceeding, opening));
-        console.log(isInfix(preceeding), isInfix(opening));
-        console.log(preceeding, opening);
-        //console.log(preceeding.__proto__, opening.__proto__);
-      }
-
       var isBeginning = isBeginOfExpr(preceeding, opening);
+      var isEnd = isEndOfExpr();
       // Warn when a grouping operator only has a single expression, except:
-      if (state.option.singleGroups &&
-        // When used to designate a function expression for immediate invocation
-        !(triggerFnExpr && isBeginning) &&
-        // As the return value of a single-statement arrow function
-        !(ret.id === "{" && preceeding.id === "=>") &&
-        // The binding power of the previous operator is lower than that of the
-        // grouped expression
-        !(!isInfix(preceeding) && ret.lbp < preceeding.lbp) &&
-        !(ret.lbp < state.tokens.next.lbp) &&
-        // When used to signal an object literal as the first token in the
-        // expression
-        !(ret.id === "{" && isBeginning)) {
-        warning("W126");
-      }
-
-        if (preceeding.line === 4) {
-          console.log(ret);
+      if (state.option.singleGroups) {
+        if (!ret.left &&
+          !(ret.id === "{" && isBeginning) &&
+          // When used to designate a function expression for immediate invocation
+          !(triggerFnExpr && isBeginning) &&
+          // As the return value of a single-statement arrow function
+          !(ret.id === "{" && preceeding.id === "=>")) {
+          warning("W126");
+        } else if(ret.left &&
+          // The binding power of the previous operator is lower than that of the
+          // grouped expression
+          !((!isInfix(preceeding) || preceeding.left) && ret.lbp < preceeding.lbp) &&
+          !(!isEnd && ret.lbp < state.tokens.next.lbp) &&
+          !(isBeginning && triggerFnExpr) &&
+          // When used to signal an object literal as the first token in the
+          // expression
+          !(ret.id === "{" && isBeginning)) {
+          warning("W126");
         }
+      }
     }
     if (ret) {
       ret.paren = true;
