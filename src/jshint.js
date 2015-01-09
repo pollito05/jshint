@@ -2549,7 +2549,8 @@ var JSHINT = (function () {
           // The binding power of the previous operator is lower than that of the
           // grouped expression
           !(!isBeginning && ret.lbp < preceeding.lbp) &&
-          !(!isEnd && ret.lbp < state.tokens.next.lbp)) {
+          !(!isEnd && ret.lbp < state.tokens.next.lbp) &&
+          !(ret.id === "+" && preceeding.id === "+")) {
           // When used to signal an object literal as the first token in the
           // expression
           warning("W126");
