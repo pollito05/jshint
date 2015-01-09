@@ -831,12 +831,11 @@ var JSHINT = (function () {
     return false;
   }
 
-  function isBeginOfExpr(prev, curr) {
+  function isBeginOfExpr(prev) {
     return !prev.left && prev.arity !== "unary";
   }
 
-  // TODO: Figure out what this represents exactly, then name is appropriately.
-  function somethingElse(prev) {
+  function isBeginOfStmt(prev) {
     if (prev.id === "(begin)" || prev.id === ";" || prev.id === "}") {
       return true;
     }
@@ -2491,7 +2490,6 @@ var JSHINT = (function () {
 
     var exprs = [];
     var preceeding = state.tokens.prev;
-    var opening = state.tokens.curr;
 
     if (state.tokens.next.id !== ")") {
       for (;;) {
@@ -2532,29 +2530,28 @@ var JSHINT = (function () {
     } else {
       ret = exprs[0];
 
-      var isBeginning = isBeginOfExpr(preceeding, opening);
-      var sE = somethingElse(preceeding);
-      var isEnd = isEndOfExpr();
+      var startsExpr = isBeginOfExpr(preceeding);
       // Warn when a grouping operator only has a single expression, except:
       if (state.option.singleGroups) {
-        if (sE) {
-          if (!triggerFnExpr && !ret.id === "{")
+        if (isBeginOfStmt(preceeding)) {
+          if (!triggerFnExpr && ret.id !== "{") {
             warning("W126");
+          }
         } else {
-        if (!ret.left &&
-          // As the return value of a single-statement arrow function
-          !(ret.id === "{" && preceeding.id === "=>")) {
-          warning("W126");
-        } else if(ret.left &&
-          // The binding power of the previous operator is lower than that of the
-          // grouped expression
-          !(!isBeginning && ret.lbp < preceeding.lbp) &&
-          !(!isEnd && ret.lbp < state.tokens.next.lbp) &&
-          !(ret.id === "+" && preceeding.id === "+")) {
-          // When used to signal an object literal as the first token in the
-          // expression
-          warning("W126");
-        }
+          if (!ret.left &&
+            // As the return value of a single-statement arrow function
+            !(ret.id === "{" && preceeding.id === "=>")) {
+            warning("W126");
+          } else if(ret.left &&
+            // The binding power of the previous operator is lower than that of
+            // the grouped expression
+            !(!startsExpr && ret.lbp < preceeding.lbp) &&
+            !(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp) &&
+            !(ret.id === "+" && preceeding.id === "+")) {
+            // When used to signal an object literal as the first token in the
+            // expression
+            warning("W126");
+          }
         }
       }
     }
