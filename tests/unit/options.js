@@ -1755,35 +1755,6 @@ exports.esnextPredefs = function (test) {
 
 var singleGroups = exports.singleGroups = {};
 
-singleGroups.fixture = function (test) {
-  test.done();
-  return;
-  var src = fs.readFileSync(__dirname + "/fixtures/singleGroups.js", "utf8");
-
-  TestRun(test)
-    .addError(5, "Grouping operator is unnecessary for lone expressions.")
-    .addError(7, "Grouping operator is unnecessary for lone expressions.")
-    .addError(9, "Grouping operator is unnecessary for lone expressions.")
-    .addError(11, "Grouping operator is unnecessary for lone expressions.")
-    .addError(13, "Grouping operator is unnecessary for lone expressions.")
-    .addError(15, "Grouping operator is unnecessary for lone expressions.")
-    .addError(17, "Grouping operator is unnecessary for lone expressions.")
-    .addError(18, "Grouping operator is unnecessary for lone expressions.")
-    .addError(19, "Grouping operator is unnecessary for lone expressions.")
-    .addError(21, "Grouping operator is unnecessary for lone expressions.")
-    .addError(23, "Grouping operator is unnecessary for lone expressions.")
-    .addError(25, "Grouping operator is unnecessary for lone expressions.")
-    .addError(26, "Grouping operator is unnecessary for lone expressions.")
-    .addError(27, "Grouping operator is unnecessary for lone expressions.")
-    .addError(29, "Grouping operator is unnecessary for lone expressions.")
-    .test(src, {
-      singleGroups: true,
-      esnext: true
-    });
-
-  test.done();
-};
-
 singleGroups.loneIdentifier = function (test) {
   var code = [
     "if ((a)) {}",
