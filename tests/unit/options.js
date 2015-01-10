@@ -1928,6 +1928,41 @@ singleGroups.functionExpression = function (test) {
     .addError(16, "Grouping operator is unnecessary for lone expressions.")
     .test(code, { singleGroups: true });
 
+  code = [
+    "(function*() { yield; })();",
+    "(function*() { yield; }).call();",
+    "(function*() { yield; }());",
+    "(function*() { yield; }.call());",
+    "var a = (function*() { yield; })();",
+    "var b = (function*() { yield; }).call();",
+    "var c = (function*() { yield; }());",
+    "var d = (function*() { yield; }.call());",
+    "var e = { e: (function*() { yield; })() };",
+    "var f = { f: (function*() { yield; }).call() };",
+    "var g = { g: (function*() { yield; }()) };",
+    "var h = { h: (function*() { yield; }.call()) };",
+    "if ((function*() { yield; })()) {}",
+    "if ((function*() { yield; }).call()) {}",
+    "if ((function*() { yield; }())) {}",
+    "if ((function*() { yield; }.call())) {}"
+  ];
+
+  TestRun(test)
+    .addError(5, "Grouping operator is unnecessary for lone expressions.")
+    .addError(6, "Grouping operator is unnecessary for lone expressions.")
+    .addError(7, "Grouping operator is unnecessary for lone expressions.")
+    .addError(8, "Grouping operator is unnecessary for lone expressions.")
+    .addError(9, "Grouping operator is unnecessary for lone expressions.")
+    .addError(10, "Grouping operator is unnecessary for lone expressions.")
+    .addError(11, "Grouping operator is unnecessary for lone expressions.")
+    .addError(12, "Grouping operator is unnecessary for lone expressions.")
+    .addError(13, "Grouping operator is unnecessary for lone expressions.")
+    .addError(14, "Grouping operator is unnecessary for lone expressions.")
+    .addError(15, "Grouping operator is unnecessary for lone expressions.")
+    .addError(16, "Grouping operator is unnecessary for lone expressions.")
+    .test(code, { singleGroups: true, esnext: true });
+
+
   test.done();
 };
 
