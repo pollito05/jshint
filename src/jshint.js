@@ -2461,7 +2461,7 @@ var JSHINT = (function () {
   prefix("(", function () {
     var bracket, brackets = [];
     var pn = state.tokens.next, pn1, i = -1;
-    var ret, triggerFnExpr;
+    var ret, triggerFnExpr, preceeding;
     var parens = 1;
 
     do {
@@ -2489,7 +2489,7 @@ var JSHINT = (function () {
     }
 
     var exprs = [];
-    var preceeding = state.tokens.prev;
+    preceeding = state.tokens.prev;
 
     if (state.tokens.next.id !== ")") {
       for (;;) {
@@ -2530,27 +2530,28 @@ var JSHINT = (function () {
     } else {
       ret = exprs[0];
 
-      var startsExpr = isBeginOfExpr(preceeding);
       // Warn when a grouping operator only has a single expression, except:
       if (state.option.singleGroups) {
         if (isBeginOfStmt(preceeding)) {
+          // When used to signal an object literal as the first token in the
+          // expression
           if (!triggerFnExpr && ret.id !== "{") {
             warning("W126");
           }
         } else {
-          if (!ret.left &&
-            // As the return value of a single-statement arrow function
-            !(ret.id === "{" && preceeding.id === "=>")) {
-            warning("W126");
-          } else if(ret.left &&
+          if (ret.left) {
             // The binding power of the previous operator is lower than that of
             // the grouped expression
-            !(!startsExpr && ret.lbp < preceeding.lbp) &&
-            !(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp) &&
-            !(ret.id === "+" && preceeding.id === "+")) {
-            // When used to signal an object literal as the first token in the
-            // expression
-            warning("W126");
+            if (!(!isBeginOfExpr(preceeding) && ret.lbp < preceeding.lbp) &&
+              !(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp) &&
+              !(ret.id === "+" && preceeding.id === "+")) {
+              warning("W126");
+            }
+          } else {
+            // As the return value of a single-statement arrow function
+            if (!(ret.id === "{" && preceeding.id === "=>")) {
+              warning("W126");
+            }
           }
         }
       }
