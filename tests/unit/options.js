@@ -1941,16 +1941,17 @@ singleGroups.functionExpression = function (test) {
   test.done();
 };
 
-singleGroups.arrowFunctionBodies = function (test) {
+singleGroups.arrowFunctions = function (test) {
   var code = [
     "var a = () => ({});",
-    "var b = (...c) => (c);",
-    "var d = () => (3);"
+    "var b = (c) => {};",
+    "var d = () => (e);",
+    "var f = () => (3);"
   ];
 
   TestRun(test)
-    .addError(2, "Grouping operator is unnecessary for lone expressions.")
     .addError(3, "Grouping operator is unnecessary for lone expressions.")
+    .addError(4, "Grouping operator is unnecessary for lone expressions.")
     .test(code, { singleGroups: true, esnext: true });
 
   test.done();
@@ -1972,6 +1973,21 @@ singleGroups.objectLiterals = function (test) {
     .addError(4, "Grouping operator is unnecessary for lone expressions.")
     .addError(5, "Grouping operator is unnecessary for lone expressions.")
     .addError(6, "Grouping operator is unnecessary for lone expressions.")
+    .test(code, { singleGroups: true });
+
+  test.done();
+};
+
+singleGroups.newLine = function(test) {
+  var code = [
+    "function x() {",
+    "  return f",
+    "    ();",
+    "}",
+    "x({ f: null });"
+  ];
+
+  TestRun(test)
     .test(code, { singleGroups: true });
 
   test.done();
