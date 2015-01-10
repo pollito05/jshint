@@ -1848,7 +1848,9 @@ singleGroups.bindingPower = function (test) {
     "if ((a * b) * c) {}",
     "if (a + (b * c)) {}",
     "if (a, (b * c)) {}",
-    "if ((a * b), c) {}"
+    "if ((a * b), c) {}",
+    "(a ? a : (a=[])).push(b);",
+    "if (a || (1 / 0 == 1 / 0)) {}"
   ];
 
   TestRun(test)
@@ -1871,6 +1873,8 @@ singleGroups.bindingPower = function (test) {
     .addError(26, "Grouping operator is unnecessary for lone expressions.")
     .addError(27, "Grouping operator is unnecessary for lone expressions.")
     .addError(28, "Grouping operator is unnecessary for lone expressions.")
+    .addError(29, "Grouping operator is unnecessary for lone expressions.")
+    .addError(30, "Grouping operator is unnecessary for lone expressions.")
     .test(code, { singleGroups: true });
 
   test.done();
