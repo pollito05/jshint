@@ -2501,6 +2501,7 @@ var JSHINT = (function () {
     var parens = 1;
     var opening = state.tokens.curr;
     var preceeding = state.tokens.prev;
+    var isNecessary = !state.option.singleGroups;
 
     do {
       if (pn.value === "(") {
@@ -2568,42 +2569,56 @@ var JSHINT = (function () {
       first = exprs[0];
       last = exprs[exprs.length - 1];
 
-      if (!(!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) &&
-        !(!isEndOfExpr() && last.lbp < state.tokens.next.lbp) &&
-        //!isStmtBoundary(state.tokens.curr, state.tokens.next) &&
-        !(ret.id === "+" && preceeding.id === "+")) {
-        warning("W126");
+      if (!isNecessary) {
+        if ((!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) ||
+          (!isEndOfExpr() && last.lbp < state.tokens.next.lbp) ||
+          //!isStmtBoundary(state.tokens.curr, state.tokens.next) &&
+          (ret.id === "+" && preceeding.id === "+")) {
+          isNecessary = true;
+        } else if (preceeding.assign) {
+          isNecessary = true;
+        } else if (preceeding.lbp === 0) {
+          isNecessary = true;
+        }
       }
     } else {
       ret = first = last = exprs[0];
 
-      // Warn when a grouping operator only has a single expression, except:
-      if (state.option.singleGroups) {
-        if (isStmtBoundary(preceeding, ret)) {
-          // When used to signal an object literal as the first token in the
-          // expression
-          if (!triggerFnExpr && ret.id !== "{") {
-            warning("W126");
-          }
-        } else if (ret.left) {
-          // The binding power of the previous operator is lower than that of
-          // the grouped expression
-          if (!(!isBeginOfExpr(preceeding) && ret.lbp < preceeding.lbp) &&
-            !(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp) &&
-            !(ret.id === "+" && preceeding.id === "+")) {
-            warning("W126");
-          }
-        } else {
-          // As the return value of a single-statement arrow function
-          if (!(ret.id === "{" && preceeding.id === "=>")) {
-            warning("W126");
-          }
+      if (!isNecessary) {
+        // Used to distinguish from an ExpressionStatement
+        if (isStmtBoundary(preceeding, first) && (triggerFnExpr || ret.id === "{")) {
+          isNecessary = true;
+
+        // Used as the return value of a single-statement arrow function
+        } else if (ret.id === "{" && preceeding.id === "=>") {
+          isNecessary = true;
         }
+
       }
     }
+
+    // The binding power of the previous operator is lower than that of
+    // the grouped expression
+    if (isStmtBoundary(preceeding, first)) {
+    } else if (!ret.left && !ret.exprs) {
+    } else {
+      if (!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) {
+        isNecessary = true;
+      } else if (!isEndOfExpr() && last.lbp < state.tokens.next.lbp) {
+        isNecessary = true;
+      } else if (ret.id === "+" && preceeding.id === "+") {
+        isNecessary = true;
+      }
+    }
+
     if (ret) {
+      if (!isNecessary) {
+        warning("W126");
+      }
+
       ret.paren = true;
     }
+
     return ret;
   });
 

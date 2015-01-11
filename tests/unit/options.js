@@ -1947,7 +1947,6 @@ singleGroups.functionExpression = function (test) {
     .addError(16, "Grouping operator is unnecessary for lone expressions.")
     .test(code, { singleGroups: true, esnext: true });
 
-
   test.done();
 };
 
