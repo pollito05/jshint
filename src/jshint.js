@@ -757,17 +757,6 @@ var JSHINT = (function () {
 
   function advance(id, t) {
 
-    var prev = state.tokens.prev;
-    var curr = state.tokens.curr;
-    var next = state.tokens.next;
-
-    if (isStmtBoundary(prev, curr)) {
-      //console.log(prev.line, prev.id || prev.value, curr.id || curr.value);
-      if (prev.id === '}') {
-        //printTs(prev, curr);
-      }
-    }
-
     switch (state.tokens.curr.id) {
     case "(number)":
       if (state.tokens.next.id === ".") {
@@ -853,7 +842,7 @@ var JSHINT = (function () {
   }
 
   function isStmtBoundary(first, second) {
-    if (first.id === "(begin)" || first.id === ";" ) {
+    if (first.id === "(begin)" || first.id === ";") {
       return true;
     }
 
@@ -870,13 +859,6 @@ var JSHINT = (function () {
     }
 
     return first.line !== second.line;
-  }
-  function isBeginOfStmt(prev) {
-    if (prev.id === "(begin)" || prev.id === ";" || prev.id === "}") {
-      return true;
-    }
-
-    return false;
   }
 
   // This is the heart of JSHINT, the Pratt parser. In addition to parsing, it
