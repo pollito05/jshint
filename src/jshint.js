@@ -747,12 +747,6 @@ var JSHINT = (function () {
     return t;
   }
 
-  function printTs(t) {
-    Array.prototype.forEach.call(arguments, function(t) {
-      console.log(t, t.__proto__);
-    });
-  }
-
   // Produce the next token. It looks for programming errors.
 
   function advance(id, t) {
@@ -1079,7 +1073,9 @@ var JSHINT = (function () {
   }
 
   function delim(s) {
-    return symbol(s, 0);
+    var x = symbol(s, 0);
+    x.delim = true;
+    return x;
   }
 
   function stmt(s, f) {
@@ -2481,7 +2477,6 @@ var JSHINT = (function () {
     var pn = state.tokens.next, pn1, i = -1;
     var ret, triggerFnExpr, first, last;
     var parens = 1;
-    var opening = state.tokens.curr;
     var preceeding = state.tokens.prev;
     var isNecessary = !state.option.singleGroups;
 
@@ -2552,14 +2547,7 @@ var JSHINT = (function () {
       last = exprs[exprs.length - 1];
 
       if (!isNecessary) {
-        if ((!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) ||
-          (!isEndOfExpr() && last.lbp < state.tokens.next.lbp) ||
-          //!isStmtBoundary(state.tokens.curr, state.tokens.next) &&
-          (ret.id === "+" && preceeding.id === "+")) {
-          isNecessary = true;
-        } else if (preceeding.assign) {
-          isNecessary = true;
-        } else if (preceeding.lbp === 0) {
+        if (preceeding.assign || preceeding.delim) {
           isNecessary = true;
         }
       }
@@ -2567,7 +2555,8 @@ var JSHINT = (function () {
       ret = first = last = exprs[0];
 
       if (!isNecessary) {
-        // Used to distinguish from an ExpressionStatement
+        // Used to distinguish from an ExpressionStatement which may not begin
+        // with the `{` and `function` tokens
         if (isStmtBoundary(preceeding, first) && (triggerFnExpr || ret.id === "{")) {
           isNecessary = true;
 
@@ -2579,21 +2568,20 @@ var JSHINT = (function () {
       }
     }
 
-    // The binding power of the previous operator is lower than that of
-    // the grouped expression
-    if (isStmtBoundary(preceeding, first)) {
-    } else if (!ret.left && !ret.exprs) {
-    } else {
-      if (!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) {
-        isNecessary = true;
-      } else if (!isEndOfExpr() && last.lbp < state.tokens.next.lbp) {
-        isNecessary = true;
-      } else if (ret.id === "+" && preceeding.id === "+") {
-        isNecessary = true;
-      }
-    }
-
     if (ret) {
+
+      // The operator may be necessary to override the default binding power of
+      // neighboring operators.
+      if (!isNecessary && (first.left || ret.exprs)) {
+        if (!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) {
+          isNecessary = true;
+        } else if (!isEndOfExpr() && last.lbp < state.tokens.next.lbp) {
+          isNecessary = true;
+        } else if (first.id === "+" && preceeding.id === "+") {
+          isNecessary = true;
+        }
+      }
+
       if (!isNecessary) {
         warning("W126");
       }
