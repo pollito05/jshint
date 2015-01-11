@@ -2497,9 +2497,10 @@ var JSHINT = (function () {
   prefix("(", function () {
     var bracket, brackets = [];
     var pn = state.tokens.next, pn1, i = -1;
-    var ret, triggerFnExpr, preceeding;
+    var ret, triggerFnExpr, first, last;
     var parens = 1;
     var opening = state.tokens.curr;
+    var preceeding = state.tokens.prev;
 
     do {
       if (pn.value === "(") {
@@ -2526,7 +2527,6 @@ var JSHINT = (function () {
     }
 
     var exprs = [];
-    preceeding = state.tokens.prev;
 
     if (state.tokens.next.id !== ")") {
       for (;;) {
@@ -2565,41 +2565,17 @@ var JSHINT = (function () {
       ret = Object.create(state.syntax[","]);
       ret.exprs = exprs;
 
-      if (isStmtBoundary(preceeding, opening)) {
-      }
+      first = exprs[0];
+      last = exprs[exprs.length - 1];
 
-      /**
-       * var a = (1, 2);
-       * if ((1, 2)) {}
-       * 
-       * if
-       *   EITHER
-       *   not a statement boundary OR binding power mismatch
-       *   AND
-       */
-
-
-      var first = exprs[0];
-      var last = exprs[exprs.length - 1];
-      console.log(state.tokens.curr.id, isEndOfExpr());
       if (!(!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) &&
         !(!isEndOfExpr() && last.lbp < state.tokens.next.lbp) &&
         //!isStmtBoundary(state.tokens.curr, state.tokens.next) &&
         !(ret.id === "+" && preceeding.id === "+")) {
         warning("W126");
-
-        console.log(preceeding.line);
-        console.log('isBegin    ' + isBeginOfExpr(preceeding));
-        console.log('isEnd      ' + isEndOfExpr());
-        console.log('preceeding ' + preceeding.id + ' ' + preceeding.lbp);
-        console.log('ret        ' + ret.id + ' ' + ret.lbp);
-        console.log('next       ' + state.tokens.next.id + ' ' + state.tokens.next.lbp);
-        console.log(!isBeginOfExpr(preceeding) && ret.lbp < preceeding.lbp);
-        console.log(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp)
-        console.log('----');
       }
     } else {
-      ret = exprs[0];
+      ret = first = last = exprs[0];
 
       // Warn when a grouping operator only has a single expression, except:
       if (state.option.singleGroups) {
