@@ -747,9 +747,26 @@ var JSHINT = (function () {
     return t;
   }
 
+  function printTs(t) {
+    Array.prototype.forEach.call(arguments, function(t) {
+      console.log(t, t.__proto__);
+    });
+  }
+
   // Produce the next token. It looks for programming errors.
 
   function advance(id, t) {
+
+    var prev = state.tokens.prev;
+    var curr = state.tokens.curr;
+    var next = state.tokens.next;
+
+    if (isStmtBoundary(prev, curr)) {
+      //console.log(prev.line, prev.id || prev.value, curr.id || curr.value);
+      if (prev.id === '}') {
+        //printTs(prev, curr);
+      }
+    }
 
     switch (state.tokens.curr.id) {
     case "(number)":
@@ -835,6 +852,25 @@ var JSHINT = (function () {
     return !prev.left && prev.arity !== "unary";
   }
 
+  function isStmtBoundary(first, second) {
+    if (first.id === "(begin)" || first.id === ";" ) {
+      return true;
+    }
+
+    if (first.left || first.arity === "unary" || first.exps) {
+      return false;
+    }
+
+    if (isInfix(second)) {
+      return false;
+    }
+
+    if (first.id === "}") {
+      return true;
+    }
+
+    return first.line !== second.line;
+  }
   function isBeginOfStmt(prev) {
     if (prev.id === "(begin)" || prev.id === ";" || prev.id === "}") {
       return true;
@@ -2463,6 +2499,7 @@ var JSHINT = (function () {
     var pn = state.tokens.next, pn1, i = -1;
     var ret, triggerFnExpr, preceeding;
     var parens = 1;
+    var opening = state.tokens.curr;
 
     do {
       if (pn.value === "(") {
@@ -2527,31 +2564,63 @@ var JSHINT = (function () {
     if (exprs.length > 1) {
       ret = Object.create(state.syntax[","]);
       ret.exprs = exprs;
+
+      if (isStmtBoundary(preceeding, opening)) {
+      }
+
+      /**
+       * var a = (1, 2);
+       * if ((1, 2)) {}
+       * 
+       * if
+       *   EITHER
+       *   not a statement boundary OR binding power mismatch
+       *   AND
+       */
+
+
+      var first = exprs[0];
+      var last = exprs[exprs.length - 1];
+      console.log(state.tokens.curr.id, isEndOfExpr());
+      if (!(!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) &&
+        !(!isEndOfExpr() && last.lbp < state.tokens.next.lbp) &&
+        //!isStmtBoundary(state.tokens.curr, state.tokens.next) &&
+        !(ret.id === "+" && preceeding.id === "+")) {
+        warning("W126");
+
+        console.log(preceeding.line);
+        console.log('isBegin    ' + isBeginOfExpr(preceeding));
+        console.log('isEnd      ' + isEndOfExpr());
+        console.log('preceeding ' + preceeding.id + ' ' + preceeding.lbp);
+        console.log('ret        ' + ret.id + ' ' + ret.lbp);
+        console.log('next       ' + state.tokens.next.id + ' ' + state.tokens.next.lbp);
+        console.log(!isBeginOfExpr(preceeding) && ret.lbp < preceeding.lbp);
+        console.log(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp)
+        console.log('----');
+      }
     } else {
       ret = exprs[0];
 
       // Warn when a grouping operator only has a single expression, except:
       if (state.option.singleGroups) {
-        if (isBeginOfStmt(preceeding)) {
+        if (isStmtBoundary(preceeding, ret)) {
           // When used to signal an object literal as the first token in the
           // expression
           if (!triggerFnExpr && ret.id !== "{") {
             warning("W126");
           }
+        } else if (ret.left) {
+          // The binding power of the previous operator is lower than that of
+          // the grouped expression
+          if (!(!isBeginOfExpr(preceeding) && ret.lbp < preceeding.lbp) &&
+            !(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp) &&
+            !(ret.id === "+" && preceeding.id === "+")) {
+            warning("W126");
+          }
         } else {
-          if (ret.left) {
-            // The binding power of the previous operator is lower than that of
-            // the grouped expression
-            if (!(!isBeginOfExpr(preceeding) && ret.lbp < preceeding.lbp) &&
-              !(!isEndOfExpr() && ret.lbp < state.tokens.next.lbp) &&
-              !(ret.id === "+" && preceeding.id === "+")) {
-              warning("W126");
-            }
-          } else {
-            // As the return value of a single-statement arrow function
-            if (!(ret.id === "{" && preceeding.id === "=>")) {
-              warning("W126");
-            }
+          // As the return value of a single-statement arrow function
+          if (!(ret.id === "{" && preceeding.id === "=>")) {
+            warning("W126");
           }
         }
       }
