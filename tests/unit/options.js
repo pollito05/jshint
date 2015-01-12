@@ -1789,7 +1789,9 @@ singleGroups.neighborless = function (test) {
   test.done();
 };
 
-singleGroups.bindingPower = function (test) {
+singleGroups.bindingPower = {};
+
+singleGroups.bindingPower.singleExpr = function (test) {
   var code = [
     "var a = !(a instanceof b);",
     "var b = !(a in b);",
@@ -1802,11 +1804,6 @@ singleGroups.bindingPower = function (test) {
     "var i = 2 * (3 - 4 - 5) * 6;",
     "var j = (a = 1) + 2;",
     "var j = (a += 1) / 2;",
-    "var j = (a, b);",
-    "var k = -(a, b);",
-    "var i = (1, a = 1) + 2;",
-    "var k = a ? (b, c) : (d, e);",
-    "var j = (a, b + c) * d;",
     // Invalid forms:
     "var j = 2 * ((3 - 4) - 5) * 6;",
     "var k = 2 * (3 - (4 - 5)) * 6;",
@@ -1825,15 +1822,16 @@ singleGroups.bindingPower = function (test) {
     "if (a * (b * c)) {}",
     "if ((a * b) * c) {}",
     "if (a + (b * c)) {}",
-    "if (a, (b * c)) {}",
-    "if ((a * b), c) {}",
     "(a ? a : (a=[])).push(b);",
     "if (a || (1 / 0 == 1 / 0)) {}",
-    "if ((a, b, c)) {}",
-    "if ((a + 1)) {}"
   ];
 
   TestRun(test)
+    .addError(12, "Grouping operator is unnecessary for lone expressions.")
+    .addError(13, "Grouping operator is unnecessary for lone expressions.")
+    .addError(14, "Grouping operator is unnecessary for lone expressions.")
+    .addError(15, "Grouping operator is unnecessary for lone expressions.")
+    .addError(16, "Grouping operator is unnecessary for lone expressions.")
     .addError(17, "Grouping operator is unnecessary for lone expressions.")
     .addError(18, "Grouping operator is unnecessary for lone expressions.")
     .addError(19, "Grouping operator is unnecessary for lone expressions.")
@@ -1848,15 +1846,45 @@ singleGroups.bindingPower = function (test) {
     .addError(28, "Grouping operator is unnecessary for lone expressions.")
     .addError(29, "Grouping operator is unnecessary for lone expressions.")
     .addError(30, "Grouping operator is unnecessary for lone expressions.")
-    .addError(31, "Grouping operator is unnecessary for lone expressions.")
-    .addError(32, "Grouping operator is unnecessary for lone expressions.")
-    .addError(33, "Grouping operator is unnecessary for lone expressions.")
-    .addError(34, "Grouping operator is unnecessary for lone expressions.")
-    .addError(35, "Grouping operator is unnecessary for lone expressions.")
-    .addError(36, "Grouping operator is unnecessary for lone expressions.")
-    .addError(37, "Grouping operator is unnecessary for lone expressions.")
-    .addError(38, "Grouping operator is unnecessary for lone expressions.")
-    .addError(39, "Grouping operator is unnecessary for lone expressions.")
+    .test(code, { singleGroups: true });
+
+  test.done();
+};
+
+singleGroups.bindingPower.multiExpr = function (test) {
+  var code = [
+    "var j = (a, b);",
+    "var k = -(a, b);",
+    "var i = (1, a = 1) + 2;",
+    "var k = a ? (b, c) : (d, e);",
+    "var j = (a, b + c) * d;",
+    "if (a, (b * c)) {}",
+    "if ((a * b), c) {}",
+    "if ((a, b, c)) {}",
+    "if ((a + 1)) {}"
+  ];
+
+  TestRun(test)
+    .addError(6, "Grouping operator is unnecessary for lone expressions.")
+    .addError(7, "Grouping operator is unnecessary for lone expressions.")
+    .addError(8, "Grouping operator is unnecessary for lone expressions.")
+    .addError(9, "Grouping operator is unnecessary for lone expressions.")
+    .test(code, { singleGroups: true });
+
+  test.done();
+};
+
+singleGroups.multiExpr = function (test) {
+  var code = [
+    "var a = (1, 2);",
+    "var b = (true, false) ? 1 : 2;",
+    "var c = true ? (1, 2) : false;",
+    "var d = true ? false : (1, 2);",
+    "foo((1, 2));"
+  ];
+
+  TestRun(test)
+    .addError(5, "Grouping operator is unnecessary for lone expressions.")
     .test(code, { singleGroups: true });
 
   test.done();
