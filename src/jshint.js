@@ -2545,21 +2545,23 @@ var JSHINT = (function () {
         // Used as the return value of a single-statement arrow function
         } else if (ret.id === "{" && preceeding.id === "=>") {
           isNecessary = true;
-        }
 
+        // Used to prevent left-to-right application of adjacent addition
+        // operators (the order of which effect type)
+        } else if (first.id === "+" && preceeding.id === "+") {
+          isNecessary = true;
+        }
       }
     }
 
     if (ret) {
-
       // The operator may be necessary to override the default binding power of
-      // neighboring operators.
+      // neighboring operators (whenever there is an operator in use within the
+      // first expression *or* the current group contains multiple expressions)
       if (!isNecessary && (first.left || ret.exprs)) {
         if (!isBeginOfExpr(preceeding) && first.lbp < preceeding.lbp) {
           isNecessary = true;
         } else if (!isEndOfExpr() && last.lbp < state.tokens.next.lbp) {
-          isNecessary = true;
-        } else if (first.id === "+" && preceeding.id === "+") {
           isNecessary = true;
         }
       }
