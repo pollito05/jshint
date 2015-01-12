@@ -1764,10 +1764,10 @@ singleGroups.loneIdentifier = function (test) {
   ];
 
   TestRun(test)
-    .addError(1, "Grouping operator is unnecessary for lone expressions.")
-    .addError(2, "Grouping operator is unnecessary for lone expressions.")
-    .addError(3, "Grouping operator is unnecessary for lone expressions.")
-    .addError(4, "Grouping operator is unnecessary for lone expressions.")
+    .addError(1, "Unnecessary grouping operator.")
+    .addError(2, "Unnecessary grouping operator.")
+    .addError(3, "Unnecessary grouping operator.")
+    .addError(4, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();
@@ -1781,9 +1781,9 @@ singleGroups.neighborless = function (test) {
   ];
 
   TestRun(test)
-    .addError(1, "Grouping operator is unnecessary for lone expressions.")
-    .addError(2, "Grouping operator is unnecessary for lone expressions.")
-    .addError(3, "Grouping operator is unnecessary for lone expressions.")
+    .addError(1, "Unnecessary grouping operator.")
+    .addError(2, "Unnecessary grouping operator.")
+    .addError(3, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();
@@ -1827,25 +1827,25 @@ singleGroups.bindingPower.singleExpr = function (test) {
   ];
 
   TestRun(test)
-    .addError(12, "Grouping operator is unnecessary for lone expressions.")
-    .addError(13, "Grouping operator is unnecessary for lone expressions.")
-    .addError(14, "Grouping operator is unnecessary for lone expressions.")
-    .addError(15, "Grouping operator is unnecessary for lone expressions.")
-    .addError(16, "Grouping operator is unnecessary for lone expressions.")
-    .addError(17, "Grouping operator is unnecessary for lone expressions.")
-    .addError(18, "Grouping operator is unnecessary for lone expressions.")
-    .addError(19, "Grouping operator is unnecessary for lone expressions.")
-    .addError(20, "Grouping operator is unnecessary for lone expressions.")
-    .addError(21, "Grouping operator is unnecessary for lone expressions.")
-    .addError(22, "Grouping operator is unnecessary for lone expressions.")
-    .addError(23, "Grouping operator is unnecessary for lone expressions.")
-    .addError(24, "Grouping operator is unnecessary for lone expressions.")
-    .addError(25, "Grouping operator is unnecessary for lone expressions.")
-    .addError(26, "Grouping operator is unnecessary for lone expressions.")
-    .addError(27, "Grouping operator is unnecessary for lone expressions.")
-    .addError(28, "Grouping operator is unnecessary for lone expressions.")
-    .addError(29, "Grouping operator is unnecessary for lone expressions.")
-    .addError(30, "Grouping operator is unnecessary for lone expressions.")
+    .addError(12, "Unnecessary grouping operator.")
+    .addError(13, "Unnecessary grouping operator.")
+    .addError(14, "Unnecessary grouping operator.")
+    .addError(15, "Unnecessary grouping operator.")
+    .addError(16, "Unnecessary grouping operator.")
+    .addError(17, "Unnecessary grouping operator.")
+    .addError(18, "Unnecessary grouping operator.")
+    .addError(19, "Unnecessary grouping operator.")
+    .addError(20, "Unnecessary grouping operator.")
+    .addError(21, "Unnecessary grouping operator.")
+    .addError(22, "Unnecessary grouping operator.")
+    .addError(23, "Unnecessary grouping operator.")
+    .addError(24, "Unnecessary grouping operator.")
+    .addError(25, "Unnecessary grouping operator.")
+    .addError(26, "Unnecessary grouping operator.")
+    .addError(27, "Unnecessary grouping operator.")
+    .addError(28, "Unnecessary grouping operator.")
+    .addError(29, "Unnecessary grouping operator.")
+    .addError(30, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();
@@ -1865,10 +1865,10 @@ singleGroups.bindingPower.multiExpr = function (test) {
   ];
 
   TestRun(test)
-    .addError(6, "Grouping operator is unnecessary for lone expressions.")
-    .addError(7, "Grouping operator is unnecessary for lone expressions.")
-    .addError(8, "Grouping operator is unnecessary for lone expressions.")
-    .addError(9, "Grouping operator is unnecessary for lone expressions.")
+    .addError(6, "Unnecessary grouping operator.")
+    .addError(7, "Unnecessary grouping operator.")
+    .addError(8, "Unnecessary grouping operator.")
+    .addError(9, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();
@@ -1884,7 +1884,7 @@ singleGroups.multiExpr = function (test) {
   ];
 
   TestRun(test)
-    .addError(5, "Grouping operator is unnecessary for lone expressions.")
+    .addError(5, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();
@@ -1901,7 +1901,7 @@ singleGroups.concatenation = function (test) {
   ];
 
   TestRun(test)
-    .addError(2, "Grouping operator is unnecessary for lone expressions.")
+    .addError(2, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();
@@ -1932,18 +1932,18 @@ singleGroups.functionExpression = function (test) {
   ];
 
   TestRun(test)
-    .addError(8, "Grouping operator is unnecessary for lone expressions.")
-    .addError(9, "Grouping operator is unnecessary for lone expressions.")
-    .addError(10, "Grouping operator is unnecessary for lone expressions.")
-    .addError(11, "Grouping operator is unnecessary for lone expressions.")
-    .addError(12, "Grouping operator is unnecessary for lone expressions.")
-    .addError(13, "Grouping operator is unnecessary for lone expressions.")
-    .addError(14, "Grouping operator is unnecessary for lone expressions.")
-    .addError(15, "Grouping operator is unnecessary for lone expressions.")
-    .addError(16, "Grouping operator is unnecessary for lone expressions.")
-    .addError(17, "Grouping operator is unnecessary for lone expressions.")
-    .addError(18, "Grouping operator is unnecessary for lone expressions.")
-    .addError(19, "Grouping operator is unnecessary for lone expressions.")
+    .addError(8, "Unnecessary grouping operator.")
+    .addError(9, "Unnecessary grouping operator.")
+    .addError(10, "Unnecessary grouping operator.")
+    .addError(11, "Unnecessary grouping operator.")
+    .addError(12, "Unnecessary grouping operator.")
+    .addError(13, "Unnecessary grouping operator.")
+    .addError(14, "Unnecessary grouping operator.")
+    .addError(15, "Unnecessary grouping operator.")
+    .addError(16, "Unnecessary grouping operator.")
+    .addError(17, "Unnecessary grouping operator.")
+    .addError(18, "Unnecessary grouping operator.")
+    .addError(19, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true, asi: true });
 
   test.done();
@@ -1974,18 +1974,18 @@ singleGroups.generatorExpression = function (test) {
   ];
 
   TestRun(test)
-    .addError(8, "Grouping operator is unnecessary for lone expressions.")
-    .addError(9, "Grouping operator is unnecessary for lone expressions.")
-    .addError(10, "Grouping operator is unnecessary for lone expressions.")
-    .addError(11, "Grouping operator is unnecessary for lone expressions.")
-    .addError(12, "Grouping operator is unnecessary for lone expressions.")
-    .addError(13, "Grouping operator is unnecessary for lone expressions.")
-    .addError(14, "Grouping operator is unnecessary for lone expressions.")
-    .addError(15, "Grouping operator is unnecessary for lone expressions.")
-    .addError(16, "Grouping operator is unnecessary for lone expressions.")
-    .addError(17, "Grouping operator is unnecessary for lone expressions.")
-    .addError(18, "Grouping operator is unnecessary for lone expressions.")
-    .addError(19, "Grouping operator is unnecessary for lone expressions.")
+    .addError(8, "Unnecessary grouping operator.")
+    .addError(9, "Unnecessary grouping operator.")
+    .addError(10, "Unnecessary grouping operator.")
+    .addError(11, "Unnecessary grouping operator.")
+    .addError(12, "Unnecessary grouping operator.")
+    .addError(13, "Unnecessary grouping operator.")
+    .addError(14, "Unnecessary grouping operator.")
+    .addError(15, "Unnecessary grouping operator.")
+    .addError(16, "Unnecessary grouping operator.")
+    .addError(17, "Unnecessary grouping operator.")
+    .addError(18, "Unnecessary grouping operator.")
+    .addError(19, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true, asi: true, esnext: true });
 
   test.done();
@@ -2000,8 +2000,8 @@ singleGroups.arrowFunctions = function (test) {
   ];
 
   TestRun(test)
-    .addError(3, "Grouping operator is unnecessary for lone expressions.")
-    .addError(4, "Grouping operator is unnecessary for lone expressions.")
+    .addError(3, "Unnecessary grouping operator.")
+    .addError(4, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true, esnext: true });
 
   test.done();
@@ -2020,9 +2020,9 @@ singleGroups.objectLiterals = function (test) {
   ];
 
   TestRun(test, "grouping operator not required")
-    .addError(4, "Grouping operator is unnecessary for lone expressions.")
-    .addError(5, "Grouping operator is unnecessary for lone expressions.")
-    .addError(6, "Grouping operator is unnecessary for lone expressions.")
+    .addError(4, "Unnecessary grouping operator.")
+    .addError(5, "Unnecessary grouping operator.")
+    .addError(6, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true });
 
   test.done();

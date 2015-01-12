@@ -7,9 +7,9 @@ exports["Backbone.js 0.5.3"] = function (test) {
   var src = fs.readFileSync(__dirname + '/libs/backbone.js', 'utf8');
 
   TestRun(test)
-    .addError(32, "Grouping operator is unnecessary for lone expressions.")
-    .addError(784, "Grouping operator is unnecessary for lone expressions.")
-    .addError(864, "Grouping operator is unnecessary for lone expressions.")
+    .addError(32, "Unnecessary grouping operator.")
+    .addError(784, "Unnecessary grouping operator.")
+    .addError(864, "Unnecessary grouping operator.")
     .addError(685, "Missing '()' invoking a constructor.")
     .addError(764, "Use '===' to compare with '0'.")
     .addError(859, "Use '!==' to compare with '0'.")
