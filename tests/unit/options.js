@@ -1946,7 +1946,11 @@ singleGroups.functionExpression = function (test) {
     .addError(19, "Grouping operator is unnecessary for lone expressions.")
     .test(code, { singleGroups: true, asi: true });
 
-  code = [
+  test.done();
+};
+
+singleGroups.generatorExpression = function (test) {
+  var code = [
     "(function*() { yield; })();",
     "(function*() { yield; }).call();",
     "(function*() { yield; }());",
