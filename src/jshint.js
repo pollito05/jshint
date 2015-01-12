@@ -835,26 +835,6 @@ var JSHINT = (function () {
     return !prev.left && prev.arity !== "unary";
   }
 
-  function isStmtBoundary(first, second) {
-    if (first.id === "(begin)" || first.id === ";") {
-      return true;
-    }
-
-    if (first.left || first.arity === "unary" || first.exps) {
-      return false;
-    }
-
-    if (isInfix(second)) {
-      return false;
-    }
-
-    if (first.id === "}") {
-      return true;
-    }
-
-    return first.line !== second.line;
-  }
-
   // This is the heart of JSHINT, the Pratt parser. In addition to parsing, it
   // is looking for ad hoc lint patterns. We add .fud to Pratt's model, which is
   // like .nud except that it is only used on the first token of a statement.
@@ -908,6 +888,7 @@ var JSHINT = (function () {
 
     if (initial) {
       funct["(verb)"] = state.tokens.curr.value;
+      state.tokens.curr.beginsStmt = true;
     }
 
     if (initial === true && state.tokens.curr.fud) {
@@ -2477,6 +2458,7 @@ var JSHINT = (function () {
     var pn = state.tokens.next, pn1, i = -1;
     var ret, triggerFnExpr, first, last;
     var parens = 1;
+    var opening = state.tokens.curr;
     var preceeding = state.tokens.prev;
     var isNecessary = !state.option.singleGroups;
 
@@ -2557,7 +2539,7 @@ var JSHINT = (function () {
       if (!isNecessary) {
         // Used to distinguish from an ExpressionStatement which may not begin
         // with the `{` and `function` tokens
-        if (isStmtBoundary(preceeding, first) && (triggerFnExpr || ret.id === "{")) {
+        if (opening.beginsStmt && (triggerFnExpr || ret.id === "{")) {
           isNecessary = true;
 
         // Used as the return value of a single-statement arrow function
