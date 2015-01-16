@@ -1995,13 +1995,14 @@ singleGroups.arrowFunctions = function (test) {
   var code = [
     "var a = () => ({});",
     "var b = (c) => {};",
+    "(() => {})();",
     "var d = () => (e);",
     "var f = () => (3);"
   ];
 
   TestRun(test)
-    .addError(3, "Unnecessary grouping operator.")
     .addError(4, "Unnecessary grouping operator.")
+    .addError(5, "Unnecessary grouping operator.")
     .test(code, { singleGroups: true, esnext: true });
 
   test.done();
