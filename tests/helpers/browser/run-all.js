@@ -19,6 +19,6 @@ nodeunit.runModules({
     var duration = new Date().getTime() - start;
 
     domReporter.done(duration, assertions);
-    consoleReporter.testDone(name, assertions);
+    consoleReporter.done(duration, assertions);
   }
 });
