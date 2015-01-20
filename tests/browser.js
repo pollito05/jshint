@@ -1,15 +1,27 @@
 "use strict";
 
-var fs = require("fs");
-var browserify = require("browserify");
+var phantom = require("phantom");
+var createTestServer = require("./helpers/browser/server");
+var port = 8045;
 
-var build = require('../../scripts/build');
+phantom.create(function (ph) {
+  ph.createPage(function (page) {
+    page.onConsoleMessage(function(str) {
+      console.log('logged:', str);
+    });
+    createTestServer(port, function(server) {
+      page.open("http://localhost:" + port, function (status) {
+        page.evaluate(function() { return document.body.innerHTML; }, function(val) {
+          console.log(val);
+          ph.exit();
+          server.close();
+        });
+      });
+    });
+  });
+});
 
-var bundle = browserify();
-var fixtureDir = __dirname + "/../unit/fixtures";
-
-bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
-bundle.add(build('web'), { expose: "../../src/jshint.js", noParse: true });
+/*bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
 bundle.add(__dirname + "/run-all.js");
 
 bundle.bundle(function(err, src) {
@@ -40,3 +52,4 @@ bundle.bundle(function(err, src) {
     fs.writeFileSync(__dirname + "/../browser-unit-tests.js", src);
   });
 });
+*/
