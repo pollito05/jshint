@@ -4,6 +4,7 @@ var http = require("http");
 var url = require("url");
 
 var browserify = require("browserify");
+var fixtureDir = __dirname + "/../../unit/fixtures";
 var build = require(__dirname + '/../../../scripts/build');
 
 var routes = {

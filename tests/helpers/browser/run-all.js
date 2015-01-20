@@ -1,8 +1,24 @@
-var nodeunit = window.nodeunit = require('nodeunit');
-// The browser reporter is not explicitly required by Nodeunit, so it must be
-// imported and attached here to direct Browserify to inline it.
-nodeunit.reporters.browser = require('nodeunit/lib/reporters/browser');
+var nodeunit = require('nodeunit');
+var DOMReporter = require('./reporters/dom');
+var ConsoleReporter = require('./reporters/console');
+var start = new Date().getTime();
 
-nodeunit.reporters.browser.run({
-  parser: require('../unit/parser')
+var domReporter = new DOMReporter({ el: document.body });
+var consoleReporter = new ConsoleReporter();
+
+nodeunit.runModules({
+  parser: require('../../unit/parser')
+}, {
+  moduleStart: function(name) {
+  },
+  testDone: function(name, assertions) {
+    domReporter.testDone(name, assertions);
+    consoleReporter.testDone(name, assertions);
+  },
+  done: function(assertions) {
+    var duration = new Date().getTime() - start;
+
+    domReporter.done(duration, assertions);
+    consoleReporter.testDone(name, assertions);
+  }
 });
