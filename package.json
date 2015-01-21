@@ -24,6 +24,7 @@
   },
 
   "scripts": {
+    "browser-test-server": "node tests/helpers/browser/server",
     "build": "node bin/build",
     "coverage": "istanbul -- cover ./node_modules/.bin/nodeunit tests/unit",
     "data": "node scripts/generate-identifier-data",

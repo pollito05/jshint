@@ -8,11 +8,25 @@ phantom.create(function (ph) {
   ph.createPage(function (page) {
     createTestServer(port, function(server) {
       page.onConsoleMessage(function(str) {
-        console.log('logged:', str);
-        if (/^suite:/.test(str)) {
+        var parts = str.split(":");
+        var failures = parseInt(parts[3], 10);
+
+        console.log(str);
+
+        if (parts[0] === "all") {
           ph.exit();
           server.close();
+
+          if (failures > 0) {
+            process.exit(1);
+          }
         }
+      });
+
+      page.onError(function(msg, trace) {
+        console.error(msg);
+        console.error(trace);
+        process.exit(1);
       });
 
       page.open("http://localhost:" + port, function () {});

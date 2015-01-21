@@ -7,10 +7,8 @@ var domReporter = new DOMReporter({ el: document.body });
 var consoleReporter = new ConsoleReporter();
 
 nodeunit.runModules({
-  parser: require('../../unit/parser')
+{{ INJECT_TEST_INCLUDES }}
 }, {
-  moduleStart: function(name) {
-  },
   testDone: function(name, assertions) {
     domReporter.testDone(name, assertions);
     consoleReporter.testDone(name, assertions);
