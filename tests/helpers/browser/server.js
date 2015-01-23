@@ -1,15 +1,19 @@
 "use strict";
 var fs = require("fs");
 var http = require("http");
-var PassThroughStream = require("stream").PassThrough;
+var Stream = require("stream");
+var path = require("path");
 var url = require("url");
 
 var browserify = require("browserify");
 var build = require(__dirname + "/../../../scripts/build");
+var mainPath = path.resolve(
+  __dirname + "/../../../" + require("../../../package.json").main
+);
 
 var makeRunAllScript = function() {
   var testDir = "../../unit";
-  var stream = new PassThroughStream();
+  var stream = new Stream.PassThrough();
 
   fs.readdir(__dirname + "/" + testDir, function(err, allFiles) {
     var testIncludes = allFiles.filter(function(file) {
@@ -72,6 +76,52 @@ var bundleFixtures = function(done) {
   });
 };
 
+function buildTests(done) {
+  var bundle = browserify();
+  var includedFaker = false;
+  bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
+  bundle.add(makeRunAllScript(), { basedir: __dirname });
+
+  bundle.transform(function(filename) {
+    var faker;
+
+    if (filename === mainPath) {
+      includedFaker = true;
+      faker = new Stream.Readable();
+      faker._read = function() {};
+      faker.write = function() {};
+      faker.push("console.log(window.JSHINT);exports.JSHINT = window.JSHINT;");
+      faker.push(null);
+      return faker;
+    }
+
+    return new Stream.PassThrough();
+  });
+
+  bundle.bundle(function(err, src) {
+    if (err) {
+      done(err);
+      return;
+    }
+
+    if (!includedFaker) {
+      done(new Error(
+        "JSHint extraction module not included in bundled test build."
+      ));
+      return;
+    }
+
+    bundleFixtures(function(err, fixtureBundle) {
+      if (err) {
+        done(err);
+        return;
+      }
+
+      done(null, src + fixtureBundle);
+    });
+  });
+}
+
 var routes = {
   "": function(req, res) {
     fs.readFile(__dirname + "/index.html.tmpl", function(err, contents) {
@@ -89,30 +139,24 @@ var routes = {
   },
   "jshint.js": function(req, res) {
     build("web", function(err, version, src) {
-      res.end(src);
-    });
-  },
-  "tests.js": function(req, res) {
-    var bundle = browserify();
-    bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
-    bundle.add(makeRunAllScript(), { basedir: __dirname });
-
-    bundle.bundle(function(err, src) {
       if (err) {
         res.statusCode = 500;
         res.end(err.message);
         return;
       }
 
-      bundleFixtures(function(err, fixtureBundle) {
-        if (err) {
-          res.statusCode = 500;
-          res.end(err.message);
-          return;
-        }
+      res.end(src);
+    });
+  },
+  "tests.js": function(req, res) {
+    buildTests(function(err, src) {
+      if (err) {
+        res.statusCode = 500;
+        res.end(err.message);
+        return;
+      }
 
-        res.end(src + fixtureBundle);
-      });
+      res.end(src);
     });
   }
 };
