@@ -12,13 +12,13 @@ var mainPath = path.resolve(
 );
 
 var build = {
-  jshint: function(done) {
+  "jshint.js": function(done) {
     buildJSHint("web", function(err, version, src) {
       done(err, src);
     });
   },
 
-  index: function(done) {
+  "index.html": function(done) {
     fs.readFile(__dirname + "/index.html.tmpl", function(err, contents) {
 
       if (err) {
@@ -97,7 +97,7 @@ var build = {
     return stream;
   },
 
-  tests: function(done) {
+  "tests.js": function(done) {
     var bundle = browserify();
     var includedFaker = false;
     bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
@@ -144,56 +144,31 @@ var build = {
   }
 };
 
-var routes = {
-  "": function(req, res) {
-    build.index(function(err, src) {
-      if (err) {
-        res.statusCode = 500;
-        res.end(err.message);
-        return;
-      }
-
-      res.setHeader("content-type", "text/html");
-      res.end(src);
-    });
-  },
-  "jshint.js": function(req, res) {
-    build.jshint(function(err, src) {
-      if (err) {
-        res.statusCode = 500;
-        res.end(err.message);
-        return;
-      }
-
-      res.setHeader("content-type", "application/javascript");
-      res.end(src);
-    });
-  },
-  "tests.js": function(req, res) {
-    build.tests(function(err, src) {
-      if (err) {
-        res.statusCode = 500;
-        res.end(err.message);
-        return;
-      }
-
-      res.setHeader("content-type", "application/javascript");
-      res.end(src);
-    });
-  }
+var contentTypes = {
+  ".html": "text/html",
+  ".js": "application/javascript"
 };
 
 module.exports = function(port, done) {
   var server = http.createServer(function(req, res) {
-    var pathname = url.parse(req.url).pathname.slice(1);
+    var pathname = url.parse(req.url).pathname.slice(1) || "index.html";
+    var contentType = contentTypes[path.extname(pathname)];
 
-    if (pathname in routes) {
-      routes[pathname](req, res);
-      return;
+    if (!Object.hasOwnProperty.call(build, pathname)) {
+      res.statusCode = 404;
+      res.end("not found");
     }
 
-    res.statusCode = 404;
-    res.end("not found");
+    build[pathname](function(err, src) {
+      if (err) {
+        res.statusCode = 500;
+        res.end(err.message);
+        return;
+      }
+
+      res.setHeader("content-type", contentType);
+      res.end(src);
+    });
   });
 
   server.listen(port, function() {
