@@ -90,7 +90,7 @@ function buildTests(done) {
       faker = new Stream.Readable();
       faker._read = function() {};
       faker.write = function() {};
-      faker.push("console.log(window.JSHINT);exports.JSHINT = window.JSHINT;");
+      faker.push("exports.JSHINT = window.JSHINT;");
       faker.push(null);
       return faker;
     }
