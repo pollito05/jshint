@@ -6,125 +6,147 @@ var path = require("path");
 var url = require("url");
 
 var browserify = require("browserify");
-var build = require(__dirname + "/../../../scripts/build");
+var buildJSHint = require(__dirname + "/../../../scripts/build");
 var mainPath = path.resolve(
   __dirname + "/../../../" + require("../../../package.json").main
 );
 
-var makeRunAllScript = function() {
-  var testDir = "../../unit";
-  var stream = new Stream.PassThrough();
-
-  fs.readdir(__dirname + "/" + testDir, function(err, allFiles) {
-    var testIncludes = allFiles.filter(function(file) {
-      return /\.js$/i.test(file);
-    }).map(function(file) {
-      return "\"" + file + "\": require(\"" + testDir + "/" + file + "\")";
-    }).join(",\n");
-
-    var src = "";
-    stream.on("data", function(chunk) {
-      src += chunk;
+var build = {
+  jshint: function(done) {
+    buildJSHint("web", function(err, version, src) {
+      done(err, src);
     });
+  },
 
-    (function() {
-      var src = "";
-      var runallStream = fs.createReadStream(__dirname + "/run-all.js.tmpl");
-      runallStream.on("data", function(chunk) {
-        src += chunk;
-      });
+  index: function(done) {
+    fs.readFile(__dirname + "/index.html.tmpl", function(err, contents) {
 
-      runallStream.on("end", function() {
-        stream.write(
-          src.replace(/{{\s*INJECT_TEST_INCLUDES\s*}}/, testIncludes)
-        );
-        stream.end();
-      });
-    }());
-  });
-
-  return stream;
-};
-
-var bundleFixtures = function(done) {
-  var fixtureDir = __dirname + "/../../unit/fixtures";
-
-  fs.readdir(fixtureDir, function(err, files) {
-    var src = "";
-    var fsCache = {};
-
-    if (err) {
-      done(err);
-      return;
-    }
-
-    files.forEach(function(fileName) {
-      var relativeName = "/tests/unit/fixtures/" + fileName;
-
-      fsCache[relativeName] = fs.readFileSync(
-        fixtureDir + "/" + fileName, { encoding: "utf-8" }
-      );
-    });
-
-    src += [
-      "(function() {",
-      "  window.JSHintTestFixtures = " + JSON.stringify(fsCache) + ";",
-      "}());"
-    ].join("");
-
-    done(null, src);
-  });
-};
-
-function buildTests(done) {
-  var bundle = browserify();
-  var includedFaker = false;
-  bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
-  bundle.add(makeRunAllScript(), { basedir: __dirname });
-
-  bundle.transform(function(filename) {
-    var faker;
-
-    if (filename === mainPath) {
-      includedFaker = true;
-      faker = new Stream.Readable();
-      faker._read = function() {};
-      faker.write = function() {};
-      faker.push("exports.JSHINT = window.JSHINT;");
-      faker.push(null);
-      return faker;
-    }
-
-    return new Stream.PassThrough();
-  });
-
-  bundle.bundle(function(err, src) {
-    if (err) {
-      done(err);
-      return;
-    }
-
-    if (!includedFaker) {
-      done(new Error(
-        "JSHint extraction module not included in bundled test build."
-      ));
-      return;
-    }
-
-    bundleFixtures(function(err, fixtureBundle) {
       if (err) {
         done(err);
         return;
       }
 
-      done(null, src + fixtureBundle);
+      done(
+        null, String(contents).replace(/{{\s*NOW\s*}}/g, (new Date()).getTime())
+      );
     });
-  });
-}
+  },
+
+  fixtures: function(done) {
+    var fixtureDir = __dirname + "/../../unit/fixtures";
+
+    fs.readdir(fixtureDir, function(err, files) {
+      var src = "";
+      var fsCache = {};
+
+      if (err) {
+        done(err);
+        return;
+      }
+
+      files.forEach(function(fileName) {
+        var relativeName = "/tests/unit/fixtures/" + fileName;
+
+        fsCache[relativeName] = fs.readFileSync(
+          fixtureDir + "/" + fileName, { encoding: "utf-8" }
+        );
+      });
+
+      src += [
+        "(function() {",
+        "  window.JSHintTestFixtures = " + JSON.stringify(fsCache) + ";",
+        "}());"
+      ].join("");
+
+      done(null, src);
+    });
+  },
+
+  runAllScript: function() {
+    var testDir = "../../unit";
+    var stream = new Stream.PassThrough();
+
+    fs.readdir(__dirname + "/" + testDir, function(err, allFiles) {
+      var testIncludes = allFiles.filter(function(file) {
+        return /\.js$/i.test(file);
+      }).map(function(file) {
+        return "\"" + file + "\": require(\"" + testDir + "/" + file + "\")";
+      }).join(",\n");
+
+      var src = "";
+      stream.on("data", function(chunk) {
+        src += chunk;
+      });
+
+      (function() {
+        var src = "";
+        var runallStream = fs.createReadStream(__dirname + "/run-all.js.tmpl");
+        runallStream.on("data", function(chunk) {
+          src += chunk;
+        });
+
+        runallStream.on("end", function() {
+          stream.write(
+            src.replace(/{{\s*INJECT_TEST_INCLUDES\s*}}/, testIncludes)
+          );
+          stream.end();
+        });
+      }());
+    });
+
+    return stream;
+  },
+
+  tests: function(done) {
+    var bundle = browserify();
+    var includedFaker = false;
+    bundle.require(fs.createReadStream(__dirname + "/fs.js"), { expose: "fs" });
+    bundle.add(build.runAllScript(), { basedir: __dirname });
+
+    bundle.transform(function(filename) {
+      var faker;
+
+      if (filename === mainPath) {
+        includedFaker = true;
+        faker = new Stream.Readable();
+        faker._read = function() {};
+        faker.write = function() {};
+        faker.push("exports.JSHINT = window.JSHINT;");
+        faker.push(null);
+        return faker;
+      }
+
+      return new Stream.PassThrough();
+    });
+
+    bundle.bundle(function(err, src) {
+      if (err) {
+        done(err);
+        return;
+      }
+
+      if (!includedFaker) {
+        done(new Error(
+          "JSHint extraction module not included in bundled test build."
+        ));
+        return;
+      }
+
+      build.fixtures(function(err, fixtureBundle) {
+        if (err) {
+          done(err);
+          return;
+        }
+
+        done(null, src + fixtureBundle);
+      });
+    });
+  }
+};
 
 var routes = {
   "": function(req, res) {
-    fs.readFile(__dirname + "/index.html.tmpl", function(err, contents) {
+    build.index(function(err, src) {
       if (err) {
         res.statusCode = 500;
         res.end(err.message);
@@ -132,30 +154,30 @@ var routes = {
       }
 
       res.setHeader("content-type", "text/html");
-      res.end(
-        String(contents).replace(/{{\s*NOW\s*}}/g, (new Date()).getTime())
-      );
+      res.end(src);
     });
   },
   "jshint.js": function(req, res) {
-    build("web", function(err, version, src) {
+    build.jshint(function(err, src) {
       if (err) {
         res.statusCode = 500;
         res.end(err.message);
         return;
       }
 
+      res.setHeader("content-type", "application/javascript");
       res.end(src);
     });
   },
   "tests.js": function(req, res) {
-    buildTests(function(err, src) {
+    build.tests(function(err, src) {
       if (err) {
         res.statusCode = 500;
         res.end(err.message);
         return;
       }
 
+      res.setHeader("content-type", "application/javascript");
       res.end(src);
     });
   }
