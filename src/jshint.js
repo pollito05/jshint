@@ -2260,8 +2260,8 @@ var JSHINT = (function() {
     return this;
   }, 130);
   infix("*", "mult", 140);
-  infix("/", "div", 140);
-  infix("%", "mod", 140);
+  infix("/", "div", 143);
+  infix("%", "mod", 146);
 
   suffix("++");
   prefix("++", "preinc");
