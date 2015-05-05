@@ -40,6 +40,11 @@ var Context = {
   Template: 2
 };
 
+var validRegexFlags = {
+  es5: /[gim]/,
+  es6: /[gimuy]/
+};
+
 // Object that handles postponed lexing verifications that checks the parsed
 // environment state.
 
@@ -119,6 +124,7 @@ function Lexer(source) {
   this.inComment = false;
   this.context = [];
   this.templateStarts = [];
+  this.regexpFlags = validRegexFlags[state.inESNext() ? 'es6' : 'es5'];
 
   for (var i = 0; i < state.option.indent; i += 1) {
     state.tab += " ";
@@ -1379,7 +1385,7 @@ Lexer.prototype = {
 
     while (index < length) {
       char = this.peek(index);
-      if (!/[gim]/.test(char)) {
+      if (!this.regexpFlags.test(char)) {
         break;
       }
       flags.push(char);
@@ -1390,7 +1396,7 @@ Lexer.prototype = {
     // Check regular expression for correctness.
 
     try {
-      new RegExp(body, flags.join(""));
+      new RegExp(body);
     } catch (err) {
       malformed = true;
       this.trigger("error", {

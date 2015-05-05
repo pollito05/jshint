@@ -510,6 +510,22 @@ exports.regexp = function (test) {
   TestRun(test).test("var a = 1; var b = a-- / 10;", {esnext: true});
   TestRun(test).test("var a = 1; var b = a-- / 10;", {moz: true});
 
+  TestRun(test)
+    .addError(1, "Missing semicolon.")
+    .addError(1, "Expected an assignment or function call and instead saw an expression.")
+    .test("var a = /.*/u;");
+
+  TestRun(test)
+    .test("var a = /.*/u;", { esnext: true });
+
+  TestRun(test)
+    .addError(1, "Missing semicolon.")
+    .addError(1, "Expected an assignment or function call and instead saw an expression.")
+    .test("var a = /.*/y;");
+
+  TestRun(test)
+    .test("var a = /.*/y;", { esnext: true });
+
   test.done();
 };
 
