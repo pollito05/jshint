@@ -511,6 +511,10 @@ exports.regexp = function (test) {
   TestRun(test).test("var a = 1; var b = a-- / 10;", {moz: true});
 
   TestRun(test)
+    .addError(1, "Invalid regular expression.")
+    .test("var a = /.*/ii;");
+
+  TestRun(test)
     .addError(1, "Missing semicolon.")
     .addError(1, "Expected an assignment or function call and instead saw an expression.")
     .test("var a = /.*/u;");

@@ -1388,6 +1388,17 @@ Lexer.prototype = {
       if (!this.regexpFlags.test(char)) {
         break;
       }
+
+      if (flags.indexOf(char) > -1) {
+        malformed = true;
+        this.trigger("error", {
+          code: "E016",
+          line: this.line,
+          character: this.char,
+          data: [ char ]
+        });
+      }
+
       flags.push(char);
       value += char;
       index += 1;
