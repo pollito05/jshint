@@ -6584,3 +6584,18 @@ exports.functionKeyword = function (test) {
 
   test.done();
 };
+
+exports.gh1862 = function (test) {
+  var src = [
+    "if (true)",
+    "  for (let x;;) {}",
+    "if (true)",
+    "  for (let x in []) {}",
+    "if (true)",
+    "  for (let x of []) {}"
+  ];
+
+  TestRun(test).test(src, { esnext: true });
+
+  test.done();
+};

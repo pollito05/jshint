@@ -5077,6 +5077,7 @@ var JSHINT = (function() {
       stack: function() {
         _current = {};
         _variables.push(_current);
+        delete funct["(noblockscopedvar)"];
       },
 
       unstack: function() {
