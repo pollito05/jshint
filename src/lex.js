@@ -40,7 +40,7 @@ var Context = {
   Template: 2
 };
 
-var validRegexFlags = {
+var validRegexpFlags = {
   es5: /[gim]/,
   es6: /[gimuy]/
 };
@@ -124,7 +124,7 @@ function Lexer(source) {
   this.inComment = false;
   this.context = [];
   this.templateStarts = [];
-  this.regexpFlags = validRegexFlags[state.inESNext() ? 'es6' : 'es5'];
+  this.regexpFlags = validRegexpFlags[state.inESNext() ? 'es6' : 'es5'];
 
   for (var i = 0; i < state.option.indent; i += 1) {
     state.tab += " ";
