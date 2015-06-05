@@ -402,7 +402,9 @@ exports.comments = function (test) {
   test.done();
 };
 
-exports.regexp = function (test) {
+exports.regexp = {};
+
+exports.regexp.basic = function (test) {
   var code = [
     "var a1 = /\\\x1f/;",
     "var a2 = /[\\\x1f]/;",
@@ -514,6 +516,11 @@ exports.regexp = function (test) {
     .addError(1, "Invalid regular expression.")
     .test("var a = /.*/ii;");
 
+  test.done();
+};
+
+exports.regexp.uFlag = function (test) {
+  // Flag validity
   TestRun(test)
     .addError(1, "Missing semicolon.")
     .addError(1, "Expected an assignment or function call and instead saw an expression.")
@@ -522,6 +529,34 @@ exports.regexp = function (test) {
   TestRun(test)
     .test("var a = /.*/u;", { esnext: true });
 
+  // Hexidecimal limits
+  TestRun(test)
+    .addError(3, "Invalid regular expression.")
+    .test([
+      "var a = /\\u{0}/u;",
+      "a = /\\u{10FFFF}/u;",
+      "a = /\\u{110000}/u;"
+    ], { esnext: true });
+
+  // Hexidecimal in range patterns
+  TestRun(test)
+    .addError(3, "Invalid regular expression.")
+    .addError(4, "Invalid regular expression.")
+    .test([
+      "var a = /[\\u{61}-b]/u;",
+      "a = /[\\u{061}-b]/u;",
+      "a = /[\\u{63}-b]/u;",
+      "a = /[\\u{0063}-b]/u;",
+    ], { esnext: true });
+
+  TestRun(test)
+    .test("var x = /[\uD834\uDF06-\uD834\uDF08a-z]/u;", { esnext: true });
+
+  test.done();
+};
+
+exports.regexp.yFlag = function (test) {
+  // Flag validity
   TestRun(test)
     .addError(1, "Missing semicolon.")
     .addError(1, "Expected an assignment or function call and instead saw an expression.")
@@ -533,7 +568,7 @@ exports.regexp = function (test) {
   test.done();
 };
 
-exports.testRegexRegressions = function (test) {
+exports.regexp.regressions = function (test) {
   // GH-536
   TestRun(test).test("str /= 5;", {es3: true}, { str: true });
   TestRun(test).test("str /= 5;", {}, { str: true }); // es5

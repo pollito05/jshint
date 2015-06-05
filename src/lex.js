@@ -1292,6 +1292,47 @@ Lexer.prototype = {
       }
     }.bind(this);
 
+    var translateUFlag = function(body) {
+      // The BMP character to use as a replacement for astral symbols when
+      // translating an ES6 "u"-flagged pattern to an ES5-compatible
+      // approximation.
+      // Note: replacing with '\uFFFF' enables false positives in unlikely
+      // scenarios. For example, `[\u{1044f}-\u{10440}]` is an invalid pattern
+      // that would not be detected by this substitution.
+      var astralSubstitute = "\uFFFF";
+
+      return body
+        // Replace every Unicode escape sequence with the equivalent BMP
+        // character or a constant ASCII code point in the case of astral
+        // symbols. (See the above note on `astralSubstitute` for more
+        // information.)
+        .replace(/\\u\{([0-9a-fA-F]+)\}|\\u([a-fA-F0-9]{4})/g, function($0, $1, $2) {
+          var codePoint = parseInt($1 || $2, 16);
+          if (codePoint > 0x10FFFF) {
+            malformed = true;
+            this.trigger("error", {
+              code: "E016",
+              line: this.line,
+              character: this.char,
+              data: [ char ]
+            });
+
+            return;
+          }
+          if (codePoint <= 0xFFFF) {
+            return String.fromCharCode(codePoint);
+          }
+          return astralSubstitute;
+        }.bind(this))
+        // Replace each paired surrogate with a single ASCII symbol to avoid
+        // throwing on regular expressions that are only valid in combination
+        // with the "u" flag.
+        .replace(
+          /[\uD800-\uDBFF][\uDC00-\uDFFF]/g,
+          astralSubstitute
+        );
+    }.bind(this);
+
     // Regular expressions must start with '/'
     if (!this.prereg || char !== "/") {
       return null;
@@ -1389,6 +1430,7 @@ Lexer.prototype = {
         break;
       }
 
+      // Repeated flags should trigger an error
       if (flags.indexOf(char) > -1) {
         malformed = true;
         this.trigger("error", {
@@ -1397,6 +1439,10 @@ Lexer.prototype = {
           character: this.char,
           data: [ char ]
         });
+      }
+
+      if (char === "u") {
+        body = translateUFlag(body);
       }
 
       flags.push(char);
