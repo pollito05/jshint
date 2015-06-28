@@ -42,6 +42,7 @@ var state        = require("./state.js").state;
 var style        = require("./style.js");
 var options      = require("./options.js");
 var scopeManager = require("./scope-manager.js");
+var has          = require("./has");
 
 // We need this module here because environments such as IE and Rhino
 // don't necessarilly expose the 'console' API and browserify uses
@@ -105,7 +106,7 @@ var JSHINT = (function() {
     }
 
     if (options.validNames.indexOf(name) === -1) {
-      if (t.type !== "jslint" && !_.has(options.removed, name)) {
+      if (t.type !== "jslint" && !has(options.removed, name)) {
         error("E001", t, name);
         return false;
       }
@@ -165,7 +166,7 @@ var JSHINT = (function() {
 
   function combine(dest, src) {
     Object.keys(src).forEach(function(name) {
-      if (_.has(JSHINT.blacklist, name)) return;
+      if (has(JSHINT.blacklist, name)) return;
       dest[name] = src[name];
     });
   }
@@ -435,7 +436,7 @@ var JSHINT = (function() {
       combine(predefined, predef);
 
       for (var key in predef) {
-        if (_.has(predef, key)) {
+        if (has(predef, key)) {
           declared[key] = nt;
         }
       }
@@ -1692,7 +1693,7 @@ var JSHINT = (function() {
         if (isfunc) {
           m = {};
           for (d in state.directive) {
-            if (_.has(state.directive, d)) {
+            if (has(state.directive, d)) {
               m[d] = state.directive[d];
             }
           }
@@ -1732,7 +1733,7 @@ var JSHINT = (function() {
 
         if (!stmt) {
           for (d in state.directive) {
-            if (_.has(state.directive, d)) {
+            if (has(state.directive, d)) {
               m[d] = state.directive[d];
             }
           }
@@ -3013,7 +3014,7 @@ var JSHINT = (function() {
     // Check for lonely setters if in the ES5 mode.
     if (state.inES5()) {
       for (var name in props) {
-        if (_.has(props, name) && props[name].setterToken && !props[name].getterToken) {
+        if (has(props, name) && props[name].setterToken && !props[name].getterToken) {
           warning("W078", props[name].setterToken);
         }
       }
@@ -4526,7 +4527,7 @@ var JSHINT = (function() {
       name = tkn.value;
     }
 
-    if (props[name] && _.has(props, name)) {
+    if (props[name] && has(props, name)) {
       warning("W075", state.tokens.next, msg, name);
     } else {
       props[name] = {};
@@ -4561,7 +4562,7 @@ var JSHINT = (function() {
     state.tokens.curr.accessorType = accessorType;
     state.nameStack.set(tkn);
 
-    if (props[name] && _.has(props, name)) {
+    if (props[name] && has(props, name)) {
       if (props[name].basic || props[name][flagName]) {
         warning("W075", state.tokens.next, msg, name);
       }
@@ -5004,7 +5005,7 @@ var JSHINT = (function() {
 
     // Check options
     for (var name in o) {
-      if (_.has(o, name)) {
+      if (has(o, name)) {
         checkOption(name, state.tokens.curr);
       }
     }

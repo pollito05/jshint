@@ -360,6 +360,15 @@ exports.undefwstrict = function (test) {
   test.done();
 };
 
+exports.undefProto = function (test) {
+  TestRun(test)
+    .addError(1, "The '__proto__' property is deprecated.")
+    .addError(1, "'__proto__' is not defined.")
+    .test("void __proto__;", { undef: true });
+
+  test.done();
+};
+
 // Regression test for GH-431
 exports["implied and unused should respect hoisting"] = function (test) {
   var src = fs.readFileSync(__dirname + '/fixtures/gh431.js', 'utf8');
