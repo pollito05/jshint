@@ -1437,6 +1437,24 @@ exports.testDuplicateParamNames = function (test) {
   test.done();
 };
 
+exports.testStrictParam = function (test) {
+  var src = [
+    "void function (static) {};",
+    "(function() {",
+    "  'use strict';",
+    "  void function (static) {};",
+    "}());",
+    "void function (static) { 'use strict'; };"
+  ];
+
+  TestRun(test)
+    .addError(4, "Expected an identifier and instead saw 'static' (a reserved word).")
+    .addError(6, "Expected an identifier and instead saw 'static' (a reserved word).")
+    .test(src);
+
+  test.done();
+};
+
 // Issue #1324: Make sure that we're not mutating passed options object.
 exports.testClonePassedObjects = function (test) {
   var options = { predef: ["sup"] };
