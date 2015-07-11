@@ -10,3 +10,5 @@ demo.js
 .idea
 
 coverage/
+
+tests/perf/jshint-reference/

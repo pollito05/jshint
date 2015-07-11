@@ -45,13 +45,16 @@
   },
 
   "devDependencies": {
+    "benchmark":     "~1.0.0",
     "browserify":    "9.x",
     "coveralls":     "2.11.x",
     "istanbul":      "0.3.x",
     "jscs":          "1.11.x",
     "jshint":        "2.6.x",
     "mock-stdin":    "0.3.x",
+    "nodegit":       "~0.4.1",
     "nodeunit":      "0.9.x",
+    "npm":           "~2.13.0",
     "regenerate":    "1.2.x",
     "sinon":         "1.12.x",
     "unicode-6.3.0": "0.1.x"
