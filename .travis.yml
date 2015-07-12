@@ -1,7 +1,24 @@
 language: node_js
 after_success: npm run coverage && cat ./coverage/lcov.info | coveralls
+before_install:
+  - if [ "$PERF" = "1" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+script:
+  - if [ "$PERF" = "" ]; then npm test; fi
+  - if [ "$PERF" = "1" ]; then npm run test-perf; fi
+sudo: false
+env:
+  - PERF=1
+  - PERF=
 node_js:
   - "0.10"
   - "0.12"
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
 matrix:
   fast_finish: true
+  allow_failures:
+    - env: PERF=1
