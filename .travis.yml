@@ -4,6 +4,7 @@ before_install:
   - if [ "$PERF" = "1" ]; then
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
       sudo apt-get update;
+      find / -name /lib/libc.so*;
       sudo apt-get install libc6;
       sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20;
       sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 20;
